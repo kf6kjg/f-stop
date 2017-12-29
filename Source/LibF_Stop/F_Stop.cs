@@ -1,4 +1,4 @@
-﻿// Program.cs
+﻿// F_Stop.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -24,15 +24,39 @@
 // THE SOFTWARE.
 
 using System;
+using Chattel;
 
-namespace f_stop {
-	class MainClass {
-		public static int Main(string[] args) {
-			// TODO get set up
+namespace LibF_Stop {
+	public class F_Stop {
+		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-			//var service = new LibF_Stop.F_Stop();
+		private readonly PIDFileManager _pidFileManager;
 
-			return 0;
+		private readonly string _address;
+		private readonly uint _port;
+
+		// TODO: Make sure to implement a negative cache for items that are requested but are not allowed types.  Such requests should be logged with the client details so that fail2ban can catch it.
+
+		public F_Stop(string address, uint port, PIDFileManager pidFileManager, ChattelConfiguration chattelConfigRead) {
+			if (address == null) {
+				throw new ArgumentNullException(nameof(address));
+			}
+			if (pidFileManager == null) {
+				throw new ArgumentNullException(nameof(pidFileManager));
+			}
+			if (chattelConfigRead == null) {
+				throw new ArgumentNullException(nameof(chattelConfigRead));
+			}
+			LOG.Debug($"{address}:{port} - Initializing service.");
+
+			_address = address;
+			_port = port;
+
+			_pidFileManager = pidFileManager;
+
+			// TODO: set up chattel reader
+
+			// TODO: figure out how to be a webservice.  Be sure to check out Anax2.
 		}
 	}
 }

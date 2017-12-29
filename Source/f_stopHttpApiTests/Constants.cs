@@ -1,4 +1,4 @@
-﻿// Program.cs
+﻿// Constants.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -23,16 +23,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
+using System.IO;
+using NUnit.Framework;
 
-namespace f_stop {
-	class MainClass {
-		public static int Main(string[] args) {
-			// TODO get set up
+namespace f_stopHttpApiTests {
+	internal static class Constants {
+		public static readonly string EXECUTABLE_DIRECTORY;
 
-			//var service = new LibF_Stop.F_Stop();
+		public static readonly string INI_PATH;
 
-			return 0;
+		public static readonly string LOG_CONFIG_PATH;
+
+		public static readonly string PID_FILE_PATH;
+
+		public const string SERVICE_ADDRESS = "127.0.0.1";
+
+		public const int SERVICE_PORT = 8426;
+
+		static Constants() {
+			EXECUTABLE_DIRECTORY = TestContext.CurrentContext.TestDirectory;
+			INI_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.ini");
+			LOG_CONFIG_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.config");
+			PID_FILE_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.pid");
 		}
 	}
 }

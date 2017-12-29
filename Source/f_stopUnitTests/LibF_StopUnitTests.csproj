@@ -37,9 +37,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\f_stop\f_stop.csproj">
-      <Project>{325216DB-A9A9-4879-8CB5-C5DCD15B6D60}</Project>
-      <Name>f_stop</Name>
+    <ProjectReference Include="..\LibF_Stop\LibF_Stop.csproj">
+      <Project>{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}</Project>
+      <Name>LibF_Stop</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

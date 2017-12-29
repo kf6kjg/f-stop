@@ -1,4 +1,4 @@
-﻿// Program.cs
+﻿// Test.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -23,16 +23,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using NUnit.Framework;
 using System;
 
-namespace f_stop {
-	class MainClass {
-		public static int Main(string[] args) {
-			// TODO get set up
-
-			//var service = new LibF_Stop.F_Stop();
-
-			return 0;
+namespace f_stopHttpApiTests {
+	[TestFixture]
+	public class TestGetAsset {
+		[Test]
+		public void TestCase() {
 		}
 	}
 }

@@ -28,7 +28,7 @@ using System;
 
 namespace f_stopHttpApiTests {
 	[TestFixture]
-	public class Test {
+	public class TestRemoveCap {
 		[Test]
 		public void TestCase() {
 		}

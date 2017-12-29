@@ -11,9 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.travis.yml = .travis.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "f_stopUnitTests", "Source\f_stopUnitTests\f_stopUnitTests.csproj", "{3600919D-1C63-4CDD-80BF-85F07C4B0B22}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibF_StopUnitTests", "Source\f_stopUnitTests\LibF_StopUnitTests.csproj", "{3600919D-1C63-4CDD-80BF-85F07C4B0B22}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "f_stopHttpApiTests", "Source\f_stopHttpApiTests\f_stopHttpApiTests.csproj", "{AF7622A1-6A1B-4802-A828-54AED9DA0781}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibF_Stop", "Source\LibF_Stop\LibF_Stop.csproj", "{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{AF7622A1-6A1B-4802-A828-54AED9DA0781}.Debug|x86.Build.0 = Debug|Any CPU
 		{AF7622A1-6A1B-4802-A828-54AED9DA0781}.Release|x86.ActiveCfg = Release|Any CPU
 		{AF7622A1-6A1B-4802-A828-54AED9DA0781}.Release|x86.Build.0 = Release|Any CPU
+		{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}.Debug|x86.Build.0 = Debug|Any CPU
+		{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}.Release|x86.ActiveCfg = Release|Any CPU
+		{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

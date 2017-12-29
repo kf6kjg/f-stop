@@ -3,40 +3,36 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AF7622A1-6A1B-4802-A828-54AED9DA0781}</ProjectGuid>
+    <ProjectGuid>{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>f_stopHttpApiTests</RootNamespace>
-    <AssemblyName>f_stopHttpApiTests</AssemblyName>
+    <RootNamespace>LibF_Stop</RootNamespace>
+    <AssemblyName>LibF_Stop</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
+    <OutputPath>..\..\bin</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Nini">
-      <HintPath>..\..\packages\Trove.Nini.1.1.0.0\lib\net20\Nini.dll</HintPath>
+    <Reference Include="InWorldz.Whip.Client">
+      <HintPath>..\..\packages\InWorldz.Whip.Client.1.1.0.6\lib\net461\InWorldz.Whip.Client.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="InWorldz.Whip.Client">
-      <HintPath>..\..\packages\InWorldz.Whip.Client.1.1.0.6\lib\net461\InWorldz.Whip.Client.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -61,35 +57,32 @@
     <Reference Include="openstacknet">
       <HintPath>..\..\packages\openstack.net.1.7.7\lib\net45\openstacknet.dll</HintPath>
     </Reference>
+    <Reference Include="Nini">
+      <HintPath>..\..\packages\Trove.Nini.1.1.0.0\lib\net20\Nini.dll</HintPath>
+    </Reference>
     <Reference Include="Chattel">
       <HintPath>..\..\packages\Chattel.1.4.0.52\lib\net461\Chattel.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml" />
+    <Reference Include="CSJ2K">
+      <HintPath>..\..\packages\CSJ2K.2.0.0.1\lib\net40-client\CSJ2K.dll</HintPath>
+    </Reference>
+    <Reference Include="Chattel-AssetTools">
+      <HintPath>..\..\packages\Chattel-AssetTools.1.4.0.52\lib\net461\Chattel-AssetTools.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy">
+      <HintPath>..\..\packages\Nancy.1.4.1\lib\net40\Nancy.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Self">
+      <HintPath>..\..\packages\Nancy.Hosting.Self.1.4.1\lib\net40\Nancy.Hosting.Self.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestAddCap.cs" />
-    <Compile Include="TestRemoveCap.cs" />
-    <Compile Include="TestPauseCap.cs" />
-    <Compile Include="TestResumeCap.cs" />
-    <Compile Include="TestLimitCap.cs" />
-    <Compile Include="TestGetAsset.cs" />
-    <Compile Include="Setup.cs" />
-    <Compile Include="Constants.cs" />
+    <Compile Include="F_Stop.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\PIDFileManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="ApiTests.F_Stop.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ApiTests.F_Stop.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LibF_Stop\LibF_Stop.csproj">
-      <Project>{B9B5BE0D-357C-461D-8C34-A5E0BBF67AB4}</Project>
-      <Name>LibF_Stop</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
