@@ -25,12 +25,46 @@
 
 using NUnit.Framework;
 using System;
+using RestSharp;
+using System.Net;
 
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestAddCap {
+		public static IRestResponse AddCap(Guid capId, uint? bandwidth = null) {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/ADDCAP/{Constants.SERVICE_ADMIN_TOKEN}/{capId.ToString("N")}" + (bandwidth != null ? $"/{bandwidth}" : "");
+			var request = new RestRequest(url, Method.GET);
+			var response = client.Execute(request);
+			return response;
+		}
+
 		[Test]
-		public void TestAddCap0() {
+		public void TestAddCapAddLimitedSucceeds() {
+			var response = AddCap(Guid.NewGuid(), 1024);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status: \n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestAddCapAddUnlimitedSucceeds() {
+			var response = AddCap(Guid.NewGuid());
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status: \n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestAddCapDuplicateLimitedBadRequest() {
+			var capId = Guid.NewGuid();
+			AddCap(capId, 1024);
+			var response = AddCap(capId, 1024);
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status: \n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestAddCapDuplicateUnlimitedBadRequest() {
+			var capId = Guid.NewGuid();
+			AddCap(capId);
+			var response = AddCap(capId);
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status: \n\n" + response.Content);
 		}
 	}
 }

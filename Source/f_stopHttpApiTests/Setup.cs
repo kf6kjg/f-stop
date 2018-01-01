@@ -1,4 +1,4 @@
-﻿// Test.cs
+﻿// Setup.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
