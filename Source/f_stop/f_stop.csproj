@@ -71,6 +71,7 @@
     <Reference Include="Chattel-AssetTools">
       <HintPath>..\..\packages\Chattel-AssetTools.1.4.0.52\lib\net461\Chattel-AssetTools.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -78,7 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="F_Stop.sample.ini">
+    <None Include="f_stop.sample.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

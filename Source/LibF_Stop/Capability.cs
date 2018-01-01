@@ -1,9 +1,9 @@
-﻿// Constants.cs
+﻿// Capability.cs
 //
 // Author:
-//       Ricky Curtice <ricky@rwcproductions.com>
+//       ricky <>
 //
-// Copyright (c) 2017 Richard Curtice
+// Copyright (c) 2017 ${CopyrightHolder}
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,20 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
-using NUnit.Framework;
 
-namespace f_stopHttpApiTests {
-	internal static class Constants {
-		public static readonly string EXECUTABLE_DIRECTORY;
+namespace LibF_Stop {
+	internal class Capability {
+		public bool IsActive { get; set; } = true;
 
-		public static readonly string INI_PATH;
-
-		public static readonly string LOG_CONFIG_PATH;
-
-		public static readonly string PID_FILE_PATH;
-
-		public const string SERVICE_ADDRESS = "127.0.0.1";
-
-		public const uint SERVICE_PORT = 8426;
-
-		public const string SERVICE_ADMIN_TOKEN = "asdf";
-
-		public const uint SERVICE_NC_LIFETIME_SECONDS = 120;
-
-		public static readonly Uri SERVICE_URI = new Uri($"http://{SERVICE_ADDRESS}:{SERVICE_PORT}");
-
-		static Constants() {
-			EXECUTABLE_DIRECTORY = TestContext.CurrentContext.TestDirectory;
-			INI_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.ini");
-			LOG_CONFIG_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.config");
-			PID_FILE_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.pid");
+		uint bandwidthLimit = 0;
+		public uint BandwidthLimit {
+			get {
+				return bandwidthLimit;
+			}
+			set {
+				bandwidthLimit = Math.Max(0, value);
+			}
 		}
+
 	}
 }

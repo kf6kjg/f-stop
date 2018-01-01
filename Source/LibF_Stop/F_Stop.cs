@@ -1,9 +1,9 @@
 ﻿// F_Stop.cs
 //
 // Author:
-//       Ricky Curtice <ricky@rwcproductions.com>
+//       ricky <>
 //
-// Copyright (c) 2017 Richard Curtice
+// Copyright (c) 2017 ${CopyrightHolder}
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +24,66 @@
 // THE SOFTWARE.
 
 using System;
-using Chattel;
+using Nancy.Hosting.Self;
 
 namespace LibF_Stop {
-	public class F_Stop {
-		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+	public class F_Stop : IDisposable {
+		public const string DEFAULT_ADDRESS = "*";
+		public const uint DEFAULT_PORT = 8000;
+		public const bool DEFAULT_USE_SSL = false;
+		public const string DEFAULT_ADMIN_TOKEN = "changemenow";
+		public const uint DEFAULT_NC_LIFETIME_SECONDS = 120;
 
-		private readonly PIDFileManager _pidFileManager;
+		private readonly NancyHost _host;
 
-		private readonly string _address;
-		private readonly uint _port;
-
-		// TODO: Make sure to implement a negative cache for items that are requested but are not allowed types.  Such requests should be logged with the client details so that fail2ban can catch it.
-
-		public F_Stop(string address, uint port, PIDFileManager pidFileManager, ChattelConfiguration chattelConfigRead) {
-			if (address == null) {
-				throw new ArgumentNullException(nameof(address));
+		public F_Stop(Uri uri, string adminToken, TimeSpan negativeCacheItemLifetime) {
+			adminToken = adminToken ?? throw new ArgumentNullException(nameof(adminToken));
+			if (negativeCacheItemLifetime.Ticks <= 0) {
+				throw new ArgumentOutOfRangeException(nameof(negativeCacheItemLifetime), "NegativeCacheItemLifetime cannot be 0 or negative.");
 			}
-			if (pidFileManager == null) {
-				throw new ArgumentNullException(nameof(pidFileManager));
-			}
-			if (chattelConfigRead == null) {
-				throw new ArgumentNullException(nameof(chattelConfigRead));
-			}
-			LOG.Debug($"{address}:{port} - Initializing service.");
 
-			_address = address;
-			_port = port;
+			ConfigSingleton.AdminToken = adminToken;
+			ConfigSingleton.NegativeCacheItemLifetime = negativeCacheItemLifetime;
 
-			_pidFileManager = pidFileManager;
+			// See https://github.com/NancyFx/Nancy/wiki/Self-Hosting-Nancy#namespace-reservations
+			var hostConfigs = new HostConfiguration();
+			hostConfigs.UrlReservations.CreateAutomatically = true;
 
-			// TODO: set up chattel reader
-
-			// TODO: figure out how to be a webservice.  Be sure to check out Anax2.
+			_host = new NancyHost(hostConfigs, uri);
 		}
+
+		public void Start() {
+			if (!disposedValue) {
+				_host.Start();
+			}
+		}
+
+		public void Stop() {
+			if (!disposedValue) {
+				_host.Stop();
+			}
+		}
+
+		#region IDisposable Support
+
+		private bool disposedValue; // To detect redundant calls
+
+		protected virtual void Dispose(bool disposing) {
+			if (!disposedValue) {
+				if (disposing) {
+					_host.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		// This code added to correctly implement the disposable pattern.
+		public void Dispose() {
+			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+			Dispose(true);
+		}
+
+		#endregion
 	}
 }

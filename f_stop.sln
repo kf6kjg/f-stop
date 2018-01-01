@@ -43,8 +43,6 @@ Global
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
-		$1.DirectoryNamespaceAssociation = None
-		$1.ResourceNamePolicy = FileFormatDefault
 		$0.TextStylePolicy = $2
 		$2.inheritsSet = null
 		$2.scope = application/xml
@@ -54,28 +52,11 @@ Global
 		$2.NoTabsAfterNonTabs = True
 		$2.inheritsScope = text/plain
 		$0.CSharpFormattingPolicy = $3
-		$3.IndentSwitchSection = True
-		$3.NewLinesForBracesInTypes = False
-		$3.NewLinesForBracesInMethods = False
-		$3.NewLineForElse = True
-		$3.NewLineForCatch = True
-		$3.NewLineForFinally = True
-		$3.NewLineForMembersInObjectInit = True
-		$3.NewLineForMembersInAnonymousTypes = True
-		$3.NewLineForClausesInQuery = True
-		$3.SpacingAfterMethodDeclarationName = False
-		$3.SpaceAfterMethodCallName = False
-		$3.SpaceBeforeOpenSquareBracket = False
-		$3.inheritsSet = Mono
-		$3.inheritsScope = text/x-csharp
 		$3.scope = text/x-csharp
 		$0.XmlFormattingPolicy = $4
-		$4.inheritsSet = Mono
 		$4.scope = application/xml
-		$4.inheritsScope = application/xml
 		$0.StandardHeader = $5
 		$5.Text = @${FileName}\n \nAuthor:\n      ${AuthorName} <${AuthorEmail}>\n\nCopyright (c) ${Year} ${CopyrightHolder}\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the "Software"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.
-		$5.IncludeInNewFiles = True
 		$0.NameConventionPolicy = $6
 		$6.Rules = $7
 		$7.NamingRule = $8
@@ -90,6 +71,13 @@ Global
 		$8.RequiredSuffixes = $10
 		$10.String = Exception
 		$0.VersionControlPolicy = $11
-		$11.inheritsSet = Mono
+		$0.TextStylePolicy = $12
+		$12.inheritsSet = null
+		$12.scope = text/x-csharp
+		$0.TextStylePolicy = $13
+		$13.FileWidth = 80
+		$13.TabWidth = 2
+		$13.IndentWidth = 2
+		$13.scope = text/plain
 	EndGlobalSection
 EndGlobal

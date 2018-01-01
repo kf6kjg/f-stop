@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.IO;
 using System.Threading;
 using Chattel;
@@ -65,26 +66,18 @@ namespace f_stopHttpApiTests {
 
 			var chattelConfigRead = new ChattelConfiguration(configSource, configSource.Configs["AssetsRead"]);
 
-			_service = new F_Stop(
-				Constants.SERVICE_ADDRESS,
-				Constants.SERVICE_PORT,
-				pidFileManager,
-				chattelConfigRead
-			);
+			_service = new F_Stop(Constants.SERVICE_URI, Constants.SERVICE_ADMIN_TOKEN, TimeSpan.FromSeconds(Constants.SERVICE_NC_LIFETIME_SECONDS));
 
-			// TODO: anythign else needed?
+			_service.Start();
 		}
 
 		[OneTimeTearDown]
 		public void Cleanup() {
-			// TODO: stop and dispose of service
-
-			Thread.Sleep(500);
+			_service.Stop();
+			_service.Dispose();
 
 			// Clear the PID file if it exists. 
 			File.Delete(Constants.PID_FILE_PATH);
-
-			// TODO: any further cleanup.
 		}
 	}
 }

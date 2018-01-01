@@ -30,7 +30,7 @@ namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestAddCap {
 		[Test]
-		public void TestCase() {
+		public void TestAddCap0() {
 		}
 	}
 }

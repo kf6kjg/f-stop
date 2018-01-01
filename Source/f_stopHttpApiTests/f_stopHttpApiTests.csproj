@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -65,9 +64,15 @@
       <HintPath>..\..\packages\Chattel.1.4.0.52\lib\net461\Chattel.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\..\packages\RestSharp.106.2.0\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestAddCap.cs" />
     <Compile Include="TestRemoveCap.cs" />
     <Compile Include="TestPauseCap.cs" />
     <Compile Include="TestResumeCap.cs" />
@@ -75,9 +80,11 @@
     <Compile Include="TestGetAsset.cs" />
     <Compile Include="Setup.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Test0Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Compile Include="TestAddCap.cs" />
     <None Include="ApiTests.F_Stop.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
