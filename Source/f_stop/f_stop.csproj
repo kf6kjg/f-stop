@@ -82,6 +82,7 @@
     <None Include="f_stop.sample.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibF_Stop\LibF_Stop.csproj">
