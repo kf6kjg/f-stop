@@ -25,5 +25,3 @@ using System.Runtime.CompilerServices;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
-// Allow unit testing internals
-[assembly: InternalsVisibleTo("f_stopUnitTests")]
