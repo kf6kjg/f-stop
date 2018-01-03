@@ -38,7 +38,7 @@ namespace LibF_Stop {
 			Get["/TEST"] = _ => {
 				LOG.Debug($"Test called by IP '{Request.UserHostAddress}'.");
 
-				return (Response)"OK";
+				return Response.AsText("OK");
 			};
 
 			Get["/ADDCAP/{adminToken}/{capId:guid}/{bandwidth?}"] = _ => {
