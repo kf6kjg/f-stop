@@ -31,24 +31,30 @@ using System.Net;
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestAddCap {
-		public static IRestResponse AddCap(Guid capId, uint? bandwidth = null) {
+		public static IRestResponse AddCap(Guid capId, int? bandwidth = null, string adminToken = Constants.SERVICE_ADMIN_TOKEN) {
 			var client = new RestClient(Constants.SERVICE_URI);
-			var url = $"/CAPS/HTT/ADDCAP/{Constants.SERVICE_ADMIN_TOKEN}/{capId.ToString("N")}" + (bandwidth != null ? $"/{bandwidth}" : "");
+			var url = $"/CAPS/HTT/ADDCAP/{adminToken}/{capId.ToString("N")}" + (bandwidth != null ? $"/{bandwidth}" : "");
 			var request = new RestRequest(url, Method.GET);
 			var response = client.Execute(request);
 			return response;
 		}
 
 		[Test]
-		public void TestAddCapAddLimitedSucceeds() {
-			var response = AddCap(Guid.NewGuid(), 1024);
-			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status: \n\n" + response.Content);
+		public void TestAddCapAddLimitedNegativeBadRequest() {
+			var response = AddCap(Guid.NewGuid(), -1024);
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 
 		[Test]
-		public void TestAddCapAddUnlimitedSucceeds() {
+		public void TestAddCapAddLimitedOk() {
+			var response = AddCap(Guid.NewGuid(), 1024);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestAddCapAddUnlimitedOk() {
 			var response = AddCap(Guid.NewGuid());
-			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status: \n\n" + response.Content);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 
 		[Test]
@@ -56,7 +62,7 @@ namespace f_stopHttpApiTests {
 			var capId = Guid.NewGuid();
 			AddCap(capId, 1024);
 			var response = AddCap(capId, 1024);
-			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status: \n\n" + response.Content);
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 
 		[Test]
@@ -64,7 +70,19 @@ namespace f_stopHttpApiTests {
 			var capId = Guid.NewGuid();
 			AddCap(capId);
 			var response = AddCap(capId);
-			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status: \n\n" + response.Content);
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestAddCapWrongAdminTokenLimitedBadRequest() {
+			var response = AddCap(Guid.NewGuid(), 1024, "wrong");
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestAddCapWrongAdminTokenUnlimitedBadRequest() {
+			var response = AddCap(Guid.NewGuid(), adminToken: "wrong");
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 	}
 }
