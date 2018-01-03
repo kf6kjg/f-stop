@@ -32,9 +32,9 @@ namespace LibF_Stop {
 	public class F_StopRouter : NancyModule {
 		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public F_StopRouter() : base("/CAPS/HTT") {
-			var capAdmin = new CapAdministration();
+		private static CapAdministration _capAdmin = new CapAdministration(); 
 
+		public F_StopRouter() : base("/CAPS/HTT") {
 			Get["/TEST"] = _ => {
 				LOG.Debug($"Test called by IP '{Request.UserHostAddress}'.");
 
@@ -51,25 +51,25 @@ namespace LibF_Stop {
 					bandwidth = _.bandwidth;
 				}
 
-				var result = capAdmin.AddCap(_.adminToken, _.capId, bandwidth);
+				var result = _capAdmin.AddCap(_.adminToken, _.capId, bandwidth);
 
 				return result ? StockReply.Ok : StockReply.BadRequest;
 			};
 
 			Get["/REMCAP/{adminToken}/{capId:guid}"] = _ => {
-				var result = capAdmin.RemoveCap(_.adminToken, _.capId);
+				var result = _capAdmin.RemoveCap(_.adminToken, _.capId);
 
 				return result ? StockReply.Ok : StockReply.BadRequest;
 			};
 
 			Get["/PAUSE/{adminToken}/{capId:guid}"] = _ => {
-				var result = capAdmin.PauseCap(_.adminToken, _.capId);
+				var result = _capAdmin.PauseCap(_.adminToken, _.capId);
 
 				return result ? StockReply.Ok : StockReply.BadRequest;
 			};
 
 			Get["/RESUME/{adminToken}/{capId:guid}"] = _ => {
-				var result = capAdmin.ResumeCap(_.adminToken, _.capId);
+				var result = _capAdmin.ResumeCap(_.adminToken, _.capId);
 
 				return result ? StockReply.Ok : StockReply.BadRequest;
 			};
@@ -84,7 +84,7 @@ namespace LibF_Stop {
 					bandwidth = _.bandwidth;
 				}
 
-				var result = capAdmin.LimitCap(_.adminToken, _.capId, bandwidth);
+				var result = _capAdmin.LimitCap(_.adminToken, _.capId, bandwidth);
 
 				return result ? StockReply.Ok : StockReply.BadRequest;
 			};
