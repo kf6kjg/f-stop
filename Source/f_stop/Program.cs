@@ -118,7 +118,7 @@ namespace f_stop {
 
 				var address = serverConfig?.GetString("Address", F_Stop.DEFAULT_ADDRESS) ?? F_Stop.DEFAULT_ADDRESS;
 				if (address == "*") {
-					address = "0.0.0.0";
+					address = "localhost";
 				}
 				var port = (uint?)serverConfig?.GetInt("Port", (int)F_Stop.DEFAULT_PORT) ?? F_Stop.DEFAULT_PORT;
 				var useSSL = serverConfig?.GetBoolean("UseSSL", F_Stop.DEFAULT_USE_SSL) ?? F_Stop.DEFAULT_USE_SSL;
