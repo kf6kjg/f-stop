@@ -28,7 +28,9 @@ using System.Collections.Concurrent;
 
 namespace LibF_Stop {
 	internal class CapAdministration {
-		private ConcurrentDictionary<Guid, Capability> _caps;
+		private ConcurrentDictionary<Guid, Capability> _caps = new ConcurrentDictionary<Guid, Capability>();
+
+		// TODO: Make sure to implement a negative cache for items that are requested but are not allowed types.  Such requests should be logged with the client details so that fail2ban can catch it.
 
 		public bool AddCap(string adminToken, Guid id, uint bandwidth = 0) {
 			return _caps.TryAdd(id, new Capability {
