@@ -36,7 +36,7 @@ namespace LibF_Stop {
 
 		public F_StopRouter() : base("/CAPS/HTT") {
 			Get["/TEST"] = _ => {
-				LOG.Debug($"Test called by IP '{Request.UserHostAddress}'.");
+				LOG.Debug($"Test called by IP {Request.UserHostAddress}");
 
 				return Response.AsText("OK");
 			};
@@ -51,27 +51,55 @@ namespace LibF_Stop {
 					bandwidth = _.bandwidth;
 				}
 
-				var result = _capAdmin.AddCap(_.adminToken, _.capId, bandwidth);
+				try {
+					var result = _capAdmin.AddCap(_.adminToken, _.capId, bandwidth);
 
-				return result ? StockReply.Ok : StockReply.BadRequest;
+					return result ? StockReply.Ok : StockReply.BadRequest;
+				}
+				catch (InvalidAdminTokenException) {
+					LOG.Warn($"Invalid admin token from {Request.UserHostAddress}");
+				}
+
+				return StockReply.BadRequest;
 			};
 
 			Get["/REMCAP/{adminToken}/{capId:guid}"] = _ => {
-				var result = _capAdmin.RemoveCap(_.adminToken, _.capId);
+				try {
+					var result = _capAdmin.RemoveCap(_.adminToken, _.capId);
 
-				return result ? StockReply.Ok : StockReply.BadRequest;
+					return result ? StockReply.Ok : StockReply.BadRequest;
+				}
+				catch (InvalidAdminTokenException) {
+					LOG.Warn($"Invalid admin token from {Request.UserHostAddress}");
+				}
+
+				return StockReply.BadRequest;
 			};
 
 			Get["/PAUSE/{adminToken}/{capId:guid}"] = _ => {
-				var result = _capAdmin.PauseCap(_.adminToken, _.capId);
+				try {
+					var result = _capAdmin.PauseCap(_.adminToken, _.capId);
 
-				return result ? StockReply.Ok : StockReply.BadRequest;
+					return result ? StockReply.Ok : StockReply.BadRequest;
+				}
+				catch (InvalidAdminTokenException) {
+					LOG.Warn($"Invalid admin token from {Request.UserHostAddress}");
+				}
+
+				return StockReply.BadRequest;
 			};
 
 			Get["/RESUME/{adminToken}/{capId:guid}"] = _ => {
-				var result = _capAdmin.ResumeCap(_.adminToken, _.capId);
+				try {
+					var result = _capAdmin.ResumeCap(_.adminToken, _.capId);
 
-				return result ? StockReply.Ok : StockReply.BadRequest;
+					return result ? StockReply.Ok : StockReply.BadRequest;
+				}
+				catch (InvalidAdminTokenException) {
+					LOG.Warn($"Invalid admin token from {Request.UserHostAddress}");
+				}
+
+				return StockReply.BadRequest;
 			};
 
 			Get["/LIMIT/{adminToken}/{capId:guid}/{bandwidth?}"] = _ => {
@@ -84,9 +112,16 @@ namespace LibF_Stop {
 					bandwidth = _.bandwidth;
 				}
 
-				var result = _capAdmin.LimitCap(_.adminToken, _.capId, bandwidth);
+				try {
+					var result = _capAdmin.LimitCap(_.adminToken, _.capId, bandwidth);
 
-				return result ? StockReply.Ok : StockReply.BadRequest;
+					return result ? StockReply.Ok : StockReply.BadRequest;
+				}
+				catch (InvalidAdminTokenException) {
+					LOG.Warn($"Invalid admin token from {Request.UserHostAddress}");
+				}
+
+				return StockReply.BadRequest;
 			};
 
 			Get["/{capId:guid}"] = _ => {
