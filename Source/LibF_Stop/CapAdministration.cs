@@ -33,6 +33,10 @@ namespace LibF_Stop {
 		// TODO: Make sure to implement a negative cache for items that are requested but are not allowed types.  Such requests should be logged with the client details so that fail2ban can catch it.
 
 		public bool AddCap(string adminToken, Guid id, uint bandwidth = 0) {
+			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			}
+
 			return _caps.TryAdd(id, new Capability {
 				BandwidthLimit = bandwidth,
 				IsActive = true,
@@ -40,6 +44,10 @@ namespace LibF_Stop {
 		}
 
 		public bool RemoveCap(string adminToken, Guid id) {
+			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			}
+
 			if (_caps.TryRemove(id, out Capability cap)) {
 				cap.IsActive = false;
 
@@ -50,6 +58,10 @@ namespace LibF_Stop {
 		}
 
 		public bool PauseCap(string adminToken, Guid id) {
+			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			}
+
 			if (_caps.TryGetValue(id, out Capability cap)) {
 				cap.IsActive = false;
 
@@ -60,6 +72,10 @@ namespace LibF_Stop {
 		}
 
 		public bool ResumeCap(string adminToken, Guid id) {
+			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			}
+
 			if (_caps.TryGetValue(id, out Capability cap)) {
 				cap.IsActive = true;
 
@@ -70,6 +86,10 @@ namespace LibF_Stop {
 		}
 
 		public bool LimitCap(string adminToken, Guid id, uint bandwidth = 0) {
+			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			}
+
 			if (_caps.TryGetValue(id, out Capability cap)) {
 				cap.BandwidthLimit = bandwidth;
 
