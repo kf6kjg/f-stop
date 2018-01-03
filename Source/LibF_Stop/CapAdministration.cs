@@ -34,7 +34,7 @@ namespace LibF_Stop {
 
 		public bool AddCap(string adminToken, Guid id, uint bandwidth = 0) {
 			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
-				return false;
+				throw new InvalidAdminTokenException();
 			}
 
 			return _caps.TryAdd(id, new Capability {
@@ -45,7 +45,7 @@ namespace LibF_Stop {
 
 		public bool RemoveCap(string adminToken, Guid id) {
 			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
-				return false;
+				throw new InvalidAdminTokenException();
 			}
 
 			if (_caps.TryRemove(id, out Capability cap)) {
@@ -59,7 +59,7 @@ namespace LibF_Stop {
 
 		public bool PauseCap(string adminToken, Guid id) {
 			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
-				return false;
+				throw new InvalidAdminTokenException();
 			}
 
 			if (_caps.TryGetValue(id, out Capability cap)) {
@@ -73,7 +73,7 @@ namespace LibF_Stop {
 
 		public bool ResumeCap(string adminToken, Guid id) {
 			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
-				return false;
+				throw new InvalidAdminTokenException();
 			}
 
 			if (_caps.TryGetValue(id, out Capability cap)) {
@@ -87,7 +87,7 @@ namespace LibF_Stop {
 
 		public bool LimitCap(string adminToken, Guid id, uint bandwidth = 0) {
 			if (!adminToken.Equals(ConfigSingleton.AdminToken, StringComparison.OrdinalIgnoreCase)) {
-				return false;
+				throw new InvalidAdminTokenException();
 			}
 
 			if (_caps.TryGetValue(id, out Capability cap)) {

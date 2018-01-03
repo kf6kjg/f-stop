@@ -86,6 +86,7 @@
     <Compile Include="F_Stop.cs" />
     <Compile Include="ConfigSingleton.cs" />
     <Compile Include="PIDFileManager.cs" />
+    <Compile Include="InvalidAdminTokenException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
