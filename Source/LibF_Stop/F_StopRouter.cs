@@ -41,9 +41,13 @@ namespace LibF_Stop {
 				return (Response)"OK";
 			};
 
-			Get["/ADDCAP/{adminToken}/{capId:guid}/{bandwidth?:min(0)}"] = _ => {
+			Get["/ADDCAP/{adminToken}/{capId:guid}/{bandwidth?}"] = _ => {
+				if (_.bandwidth != null && (int)_.bandwidth < 0) {
+					return StockReply.BadRequest;
+				}
+
 				uint bandwidth = 0;
-				if (_.bandwidth != null && (int)_.bandwidth >= 0) {
+				if (_.bandwidth != null) {
 					bandwidth = _.bandwidth;
 				}
 
@@ -70,9 +74,13 @@ namespace LibF_Stop {
 				return result ? StockReply.Ok : StockReply.BadRequest;
 			};
 
-			Get["/LIMIT/{adminToken}/{capId:guid}/{bandwidth?:min(0)}"] = _ => {
+			Get["/LIMIT/{adminToken}/{capId:guid}/{bandwidth?}"] = _ => {
+				if (_.bandwidth != null && (int)_.bandwidth < 0) {
+					return StockReply.BadRequest;
+				}
+
 				uint bandwidth = 0;
-				if (_.bandwidth != null && (int)_.bandwidth >= 0) {
+				if (_.bandwidth != null) {
 					bandwidth = _.bandwidth;
 				}
 
