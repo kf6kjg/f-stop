@@ -87,6 +87,8 @@
     <Compile Include="ConfigSingleton.cs" />
     <Compile Include="PIDFileManager.cs" />
     <Compile Include="InvalidAdminTokenException.cs" />
+    <Compile Include="InvalidCapabilityIdException.cs" />
+    <Compile Include="WrongAssetTypeException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
