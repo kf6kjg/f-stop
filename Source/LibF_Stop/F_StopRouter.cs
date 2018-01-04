@@ -136,6 +136,12 @@ namespace LibF_Stop {
 					return StockReply.BadRequest;
 				}
 
+				if (textureId != null && meshId != null) {
+					// Difference from Aperture: Aperture continues and only uses the texture_id when both are specc'd.
+					LOG.Warn($"Bad request for asset from {Request.UserHostAddress}: both mesh_id and texture_id supplied");
+					return StockReply.BadRequest;
+				}
+
 				try {
 					//var result = capAdmin.LimitCap(_.adminToken, _.capId, bandwidth);
 
