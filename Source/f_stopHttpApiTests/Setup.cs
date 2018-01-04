@@ -61,6 +61,16 @@ namespace f_stopHttpApiTests {
 			// Read in the ini file
 			configSource.Merge(new IniConfigSource(Constants.INI_PATH));
 
+			// Prep cache folder
+			try {
+				Directory.Delete(Constants.TEST_CACHE_PATH, true);
+			}
+			catch (DirectoryNotFoundException) {
+				// Skip.
+			}
+
+			Directory.CreateDirectory(Constants.TEST_CACHE_PATH);
+
 			// Start booting server
 			var pidFileManager = new PIDFileManager(Constants.PID_FILE_PATH);
 

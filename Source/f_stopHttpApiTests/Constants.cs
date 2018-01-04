@@ -35,6 +35,8 @@ namespace f_stopHttpApiTests {
 
 		public static readonly string LOG_CONFIG_PATH;
 
+		public static readonly string TEST_CACHE_PATH;
+
 		public static readonly string PID_FILE_PATH;
 
 		public const string SERVICE_ADDRESS = "127.0.0.1";
@@ -52,6 +54,7 @@ namespace f_stopHttpApiTests {
 			INI_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.ini");
 			LOG_CONFIG_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.config");
 			PID_FILE_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTests.F_Stop.pid");
+			TEST_CACHE_PATH = Path.Combine(EXECUTABLE_DIRECTORY, "ApiTestsCache");
 		}
 	}
 }
