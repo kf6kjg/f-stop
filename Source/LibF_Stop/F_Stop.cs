@@ -27,7 +27,7 @@ using System;
 using Nancy.Hosting.Self;
 
 namespace LibF_Stop {
-	public class F_Stop : IDisposable {
+	public sealed class F_Stop : IDisposable {
 		public const string DEFAULT_ADDRESS = "*";
 		public const uint DEFAULT_PORT = 8000;
 		public const bool DEFAULT_USE_SSL = false;

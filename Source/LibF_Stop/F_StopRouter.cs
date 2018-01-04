@@ -30,7 +30,7 @@ using System.Text;
 using Nancy;
 
 namespace LibF_Stop {
-	public class F_StopRouter : NancyModule {
+	public sealed class F_StopRouter : NancyModule {
 		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private static CapAdministration _capAdmin = new CapAdministration();
