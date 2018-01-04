@@ -36,13 +36,14 @@ namespace LibF_Stop {
 
 		public F_StopRouter() : base("/CAPS/HTT") {
 			Get["/TEST"] = _ => {
-				LOG.Debug($"Test called by IP {Request.UserHostAddress}");
+				LOG.Debug($"Test called by {Request.UserHostAddress}");
 
 				return Response.AsText("OK");
 			};
 
 			Get["/ADDCAP/{adminToken}/{capId:guid}/{bandwidth?}"] = _ => {
 				if (_.bandwidth != null && (int)_.bandwidth < 0) {
+					LOG.Warn($"Invalid bandwidth spec from {Request.UserHostAddress} on cap {_.capId}: bandwidth cannot be negative ({_.bandwidth})");
 					return StockReply.BadRequest;
 				}
 
@@ -104,6 +105,7 @@ namespace LibF_Stop {
 
 			Get["/LIMIT/{adminToken}/{capId:guid}/{bandwidth?}"] = _ => {
 				if (_.bandwidth != null && (int)_.bandwidth < 0) {
+					LOG.Warn($"Invalid bandwidth spec from {Request.UserHostAddress} on cap {_.capId}: bandwidth cannot be negative ({_.bandwidth})");
 					return StockReply.BadRequest;
 				}
 
@@ -130,6 +132,7 @@ namespace LibF_Stop {
 				var meshId = (Guid?)Request.Query["mesh_id"];
 
 				if (textureId == null && meshId == null) {
+					LOG.Warn($"Bad request for asset from {Request.UserHostAddress}: mesh_id nor texture_id supplied");
 					return StockReply.BadRequest;
 				}
 
