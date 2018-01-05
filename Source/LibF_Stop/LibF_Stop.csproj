@@ -89,6 +89,11 @@
     <Compile Include="InvalidAdminTokenException.cs" />
     <Compile Include="InvalidCapabilityIdException.cs" />
     <Compile Include="WrongAssetTypeException.cs" />
+    <Compile Include="AssetRequest.cs" />
+    <Compile Include="AssetIdMismatchException.cs" />
+    <Compile Include="AssetAlreadySetException.cs" />
+    <Compile Include="CapQueueFilledException.cs" />
+    <Compile Include="ConfigException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

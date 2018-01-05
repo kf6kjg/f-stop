@@ -28,6 +28,8 @@ using System.Collections.Concurrent;
 
 namespace LibF_Stop {
 	internal class CapAdministration {
+		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		private ConcurrentDictionary<Guid, Capability> _caps = new ConcurrentDictionary<Guid, Capability>();
 
 		// TODO: Make sure to implement a negative cache for items that are requested but are not allowed types.  Such requests should be logged with the client details so that fail2ban can catch it.
@@ -99,12 +101,51 @@ namespace LibF_Stop {
 			return false;
 		}
 
-		public byte[] RequestTextureAssetOnCap(Guid capId, Guid assetId) {
-			return null; // TODO
+		public void RequestTextureAssetOnCap(Guid capId, Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
+			if (_caps.TryGetValue(capId, out Capability cap)) {
+				cap.RequestAsset(
+					assetId,
+					(asset) => {
+						switch (asset.Type) {
+							case 0:
+							case 12:
+							case 18:
+							case 19:
+								handler(asset);
+							break;
+							default:
+								errHandler(new WrongAssetTypeException());
+							break;
+						}
+					},
+					errHandler
+				);
+
+				return;
+			}
+
+			errHandler(new InvalidCapabilityIdException());
 		}
 
-		public byte[] RequestMeshAssetOnCap(Guid capId, Guid assetId) {
-			return null; // TODO
+		public void RequestMeshAssetOnCap(Guid capId, Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
+			if (_caps.TryGetValue(capId, out Capability cap)) {
+				cap.RequestAsset(
+					assetId,
+					(asset) => {
+						if (asset.Type == 49) {
+							handler(asset);
+						}
+						else {
+							errHandler(new WrongAssetTypeException());
+						}
+					},
+					errHandler
+				);
+
+				return;
+			}
+
+			errHandler(new InvalidCapabilityIdException());
 		}
 	}
 }

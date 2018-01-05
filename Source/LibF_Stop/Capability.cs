@@ -24,20 +24,45 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace LibF_Stop {
 	internal class Capability {
-		public bool IsActive { get; set; } = true;
+		public const uint MAX_QUEUED_REQUESTS = 50;
 
-		uint bandwidthLimit = 0;
-		public uint BandwidthLimit {
-			get {
-				return bandwidthLimit;
+		public bool IsActive { get; set; } = true; // TODO: when set true, we need to empty the queue. See handle_resume_cap
+
+		public uint BandwidthLimit { get; set; } = 0;
+
+		private ConcurrentQueue<AssetRequest> _requests = new ConcurrentQueue<AssetRequest>();
+
+		public void RequestAsset(Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
+			if (!IsActive) { // Paused
+				_requests.Enqueue(new AssetRequest(assetId, handler, errHandler));
+
+				if (_requests.Count > MAX_QUEUED_REQUESTS && _requests.TryDequeue(out AssetRequest request)) {
+					request.Respond(new CapQueueFilledException());
+				}
+
+				return;
 			}
-			set {
-				bandwidthLimit = Math.Max(0, value);
+
+			// Not paused, query Chattel.
+			var reader = ConfigSingleton.ChattelReader;
+			if (reader == null) {
+				// There's no Chattel. Fail.
+				errHandler(new ConfigException("Chattel was null!"));
+				return;
 			}
+
+			var asset = reader.GetAssetSync(assetId);
+			if (!ConfigSingleton.ValidTypes.Contains(asset.Type)) {
+				errHandler(new WrongAssetTypeException());
+				return;
+			}
+
+			handler(asset);
 		}
-
 	}
 }

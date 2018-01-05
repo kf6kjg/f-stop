@@ -130,7 +130,7 @@ namespace LibF_Stop {
 				return StockReply.BadRequest;
 			};
 
-			Get["/{capId:guid}"] = _ => {
+			Get["/{capId:guid}", true] = async (_, ct) => {
 				var textureId = (Guid?)Request.Query["texture_id"];
 				var meshId = (Guid?)Request.Query["mesh_id"];
 
@@ -145,42 +145,70 @@ namespace LibF_Stop {
 					return StockReply.BadRequest;
 				}
 
-				try {
-					var response = new Response();
-
-					if (textureId != null) {
-						var data = _capAdmin.RequestTextureAssetOnCap(_.capId, (Guid)textureId);
-						if (data == null) {
-							return StockReply.NotFound;
-						}
-
-						if (Encoding.ASCII.GetString(data, 0, Math.Min(data.Length, JPEG2000_MAGIC_NUMBERS.Length)).Equals(JPEG2000_MAGIC_NUMBERS, StringComparison.Ordinal)) {
-							response.ContentType = "image/x-j2c";
-						}
-						else if (Encoding.ASCII.GetString(data, 0, Math.Min(data.Length, JPEG_MAGIC_NUMBERS.Length)).Equals(JPEG_MAGIC_NUMBERS, StringComparison.Ordinal)) {
-							response.ContentType = "image/jpeg";
-						}
-						else {
-							response.ContentType = "image/x-tga";
-						}
-						response.Contents = stream => stream.Write(data, 0, data.Length);
-					}
-					else {
-						var data = _capAdmin.RequestMeshAssetOnCap(_.capId, (Guid)meshId);
-						response.ContentType = "application/vnd.ll.mesh";
-						response.Contents = stream => stream.Write(data, 0, data.Length);
-					}
-
-					return response;
-				}
-				catch (InvalidCapabilityIdException e) {
-					LOG.Warn($"Request on nonexistent cap from {Request.UserHostAddress}", e);
+				if (textureId == Guid.Empty || meshId == Guid.Empty) {
+					var type = textureId != null ? "texture" : "mesh";
+					LOG.Warn($"Bad request for asset from {Request.UserHostAddress}: requested {type} is a zero guid.");
 					return StockReply.BadRequest;
 				}
-				catch (WrongAssetTypeException e) {
-					LOG.Warn($"Request for wrong kind of asset from {Request.UserHostAddress}", e);
-					return StockReply.BadRequest;
+
+				var completionSource = new System.Threading.Tasks.TaskCompletionSource<Response>();
+
+				AssetRequest.AssetErrorHandler errorHandler = error => {
+					if (error is InvalidCapabilityIdException) {
+						LOG.Warn($"Request on nonexistent cap from {Request.UserHostAddress}", error);
+						completionSource.SetResult(StockReply.NotFound);
+					}
+					else if (error is WrongAssetTypeException) {
+						LOG.Warn($"Request for wrong kind of asset from {Request.UserHostAddress}", error);
+						completionSource.SetResult(StockReply.BadRequest);
+					}
+					// TODO: complete logic.
+					completionSource.SetResult(StockReply.BadRequest);
+				};
+
+				if (textureId != null) {
+					_capAdmin.RequestTextureAssetOnCap(
+						(Guid)_.capId,
+						(Guid)textureId,
+						asset => {
+							var response = new Response();
+							var data = asset.Data;
+
+							if (Encoding.ASCII.GetString(data, 0, Math.Min(data.Length, JPEG2000_MAGIC_NUMBERS.Length)).Equals(JPEG2000_MAGIC_NUMBERS, StringComparison.Ordinal)) {
+								response.ContentType = "image/x-j2c";
+							}
+							else if (Encoding.ASCII.GetString(data, 0, Math.Min(data.Length, JPEG_MAGIC_NUMBERS.Length)).Equals(JPEG_MAGIC_NUMBERS, StringComparison.Ordinal)) {
+								response.ContentType = "image/jpeg";
+							}
+							else {
+								response.ContentType = "image/x-tga";
+							}
+							response.Contents = stream => stream.Write(data, 0, data.Length);
+
+							completionSource.SetResult(response);
+						},
+						errorHandler
+					);
+
 				}
+				else {
+					_capAdmin.RequestMeshAssetOnCap(
+						(Guid)_.capId,
+						(Guid)textureId,
+						asset => {
+							var response = new Response();
+							var data = asset.Data;
+
+							response.ContentType = "application/vnd.ll.mesh";
+							response.Contents = stream => stream.Write(data, 0, data.Length);
+
+							completionSource.SetResult(response);
+						},
+						errorHandler
+					);
+				}
+
+				return await completionSource.Task;
 			};
 		}
 

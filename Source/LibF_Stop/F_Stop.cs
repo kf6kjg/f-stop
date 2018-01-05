@@ -36,7 +36,7 @@ namespace LibF_Stop {
 
 		private readonly NancyHost _host;
 
-		public F_Stop(Uri uri, string adminToken, TimeSpan negativeCacheItemLifetime) {
+		public F_Stop(Uri uri, string adminToken, TimeSpan negativeCacheItemLifetime, Chattel.ChattelReader chattelReader) {
 			adminToken = adminToken ?? throw new ArgumentNullException(nameof(adminToken));
 			if (negativeCacheItemLifetime.Ticks <= 0) {
 				throw new ArgumentOutOfRangeException(nameof(negativeCacheItemLifetime), "NegativeCacheItemLifetime cannot be 0 or negative.");
@@ -44,6 +44,7 @@ namespace LibF_Stop {
 
 			ConfigSingleton.AdminToken = adminToken;
 			ConfigSingleton.NegativeCacheItemLifetime = negativeCacheItemLifetime;
+			ConfigSingleton.ChattelReader = chattelReader;
 
 			// See https://github.com/NancyFx/Nancy/wiki/Self-Hosting-Nancy#namespace-reservations
 			var hostConfigs = new HostConfiguration();

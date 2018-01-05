@@ -1,9 +1,9 @@
-﻿// ConfigSingleton.cs
+﻿// CapQueueFilledException.cs
 //
 // Author:
-//       ricky <>
+//       Ricky Curtice <ricky@rwcproductions.com>
 //
-// Copyright (c) 2017 ${CopyrightHolder}
+// Copyright (c) 2018 Richard Curtice
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,20 @@
 // THE SOFTWARE.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace LibF_Stop {
-	/// <summary>
-	/// This abomination only exists because Nancy 1.x doesn't have any other way to pass data into the application space.
-	/// </summary>
-	internal static class ConfigSingleton {
-		public static string AdminToken;
-		public static TimeSpan NegativeCacheItemLifetime;
-		public static Chattel.ChattelReader ChattelReader;
-		public static System.Collections.Concurrent.ConcurrentBag<sbyte> ValidTypes;
+	internal class CapQueueFilledException : Exception {
+		public CapQueueFilledException() {
+		}
+
+		public CapQueueFilledException(string message) : base(message) {
+		}
+
+		public CapQueueFilledException(string message, Exception innerException) : base(message, innerException) {
+		}
+
+		protected CapQueueFilledException(SerializationInfo info, StreamingContext context) : base(info, context) {
+		}
 	}
 }
