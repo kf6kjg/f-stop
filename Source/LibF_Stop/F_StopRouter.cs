@@ -170,6 +170,10 @@ namespace LibF_Stop {
 						LOG.Warn($"Request for unknown asset from {Request.UserHostAddress}", error);
 						completionSource.SetResult(StockReply.NotFound);
 					}
+					else if (error is CapQueueFilledException) {
+						LOG.Warn($"Request from {Request.UserHostAddress} had to be dropped because cap {_.capId} is paused and filled", error);
+						completionSource.SetResult(StockReply.NotFound);
+					}
 					else {
 						LOG.Warn($"Request from {Request.UserHostAddress} had unexpected error!", error);
 						completionSource.SetResult(StockReply.InternalServerError);
