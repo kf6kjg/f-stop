@@ -94,6 +94,7 @@
     <Compile Include="AssetAlreadySetException.cs" />
     <Compile Include="CapQueueFilledException.cs" />
     <Compile Include="ConfigException.cs" />
+    <Compile Include="AssetIdUnknownException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

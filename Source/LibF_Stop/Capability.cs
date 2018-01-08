@@ -57,6 +57,11 @@ namespace LibF_Stop {
 			}
 
 			var asset = reader.GetAssetSync(assetId);
+			if (asset == null) {
+				errHandler(new AssetIdUnknownException($"Could not find any asset with ID {assetId}"));
+				return;
+			}
+
 			if (!ConfigSingleton.ValidTypes.Contains(asset.Type)) {
 				errHandler(new WrongAssetTypeException());
 				return;
