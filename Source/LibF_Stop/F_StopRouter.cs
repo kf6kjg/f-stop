@@ -162,8 +162,18 @@ namespace LibF_Stop {
 						LOG.Warn($"Request for wrong kind of asset from {Request.UserHostAddress}", error);
 						completionSource.SetResult(StockReply.BadRequest);
 					}
-					// TODO: complete logic.
-					completionSource.SetResult(StockReply.BadRequest);
+					else if (error is ConfigException) {
+						LOG.Warn($"Configuration incomplete!", error);
+						completionSource.SetResult(StockReply.InternalServerError);
+					}
+					else if (error is AssetIdUnknownException) {
+						LOG.Warn($"Request for unknown asset from {Request.UserHostAddress}", error);
+						completionSource.SetResult(StockReply.NotFound);
+					}
+					else {
+						LOG.Warn($"Request from {Request.UserHostAddress} had unexpected error!", error);
+						completionSource.SetResult(StockReply.InternalServerError);
+					}
 				};
 
 				if (textureId != null) {
