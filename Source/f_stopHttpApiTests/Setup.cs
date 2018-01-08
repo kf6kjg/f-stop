@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Chattel;
@@ -75,8 +76,15 @@ namespace f_stopHttpApiTests {
 			var pidFileManager = new PIDFileManager(Constants.PID_FILE_PATH);
 
 			var chattelConfigRead = new ChattelConfiguration(configSource, configSource.Configs["AssetsRead"]);
+			var chattelReader = new ChattelReader(chattelConfigRead);
 
-			_service = new F_Stop(Constants.SERVICE_URI, Constants.SERVICE_ADMIN_TOKEN, TimeSpan.FromSeconds(Constants.SERVICE_NC_LIFETIME_SECONDS));
+			_service = new F_Stop(
+				Constants.SERVICE_URI,
+				Constants.SERVICE_ADMIN_TOKEN,
+				TimeSpan.FromSeconds(Constants.SERVICE_NC_LIFETIME_SECONDS),
+				chattelReader,
+				new List<sbyte>{ 0, 12, 18, 19, 49 }
+			);
 
 			_service.Start();
 		}

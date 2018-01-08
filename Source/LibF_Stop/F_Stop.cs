@@ -33,10 +33,11 @@ namespace LibF_Stop {
 		public const bool DEFAULT_USE_SSL = false;
 		public const string DEFAULT_ADMIN_TOKEN = "changemenow";
 		public const uint DEFAULT_NC_LIFETIME_SECONDS = 120;
+		public const string DEFAULT_VALID_ASSET_TYPES = "0,49";
 
 		private readonly NancyHost _host;
 
-		public F_Stop(Uri uri, string adminToken, TimeSpan negativeCacheItemLifetime, Chattel.ChattelReader chattelReader) {
+		public F_Stop(Uri uri, string adminToken, TimeSpan negativeCacheItemLifetime, Chattel.ChattelReader chattelReader, System.Collections.Generic.IEnumerable<sbyte> validTypes) {
 			adminToken = adminToken ?? throw new ArgumentNullException(nameof(adminToken));
 			if (negativeCacheItemLifetime.Ticks <= 0) {
 				throw new ArgumentOutOfRangeException(nameof(negativeCacheItemLifetime), "NegativeCacheItemLifetime cannot be 0 or negative.");
@@ -45,6 +46,7 @@ namespace LibF_Stop {
 			ConfigSingleton.AdminToken = adminToken;
 			ConfigSingleton.NegativeCacheItemLifetime = negativeCacheItemLifetime;
 			ConfigSingleton.ChattelReader = chattelReader;
+			ConfigSingleton.ValidTypes = new System.Collections.Concurrent.ConcurrentBag<sbyte>(validTypes);
 
 			// See https://github.com/NancyFx/Nancy/wiki/Self-Hosting-Nancy#namespace-reservations
 			var hostConfigs = new HostConfiguration();
@@ -69,7 +71,7 @@ namespace LibF_Stop {
 
 		private bool disposedValue; // To detect redundant calls
 
-		protected virtual void Dispose(bool disposing) {
+		private void Dispose(bool disposing) {
 			if (!disposedValue) {
 				if (disposing) {
 					_host.Dispose();

@@ -25,6 +25,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Chattel;
@@ -114,6 +115,8 @@ namespace f_stop {
 
 				var chattelConfigRead = new ChattelConfiguration(configSource, configSource.Configs["AssetsRead"]);
 
+				var chattelReader = new ChattelReader(chattelConfigRead);
+
 				var serverConfig = configSource.Configs["Server"];
 
 				var address = serverConfig?.GetString("Address", F_Stop.DEFAULT_ADDRESS) ?? F_Stop.DEFAULT_ADDRESS;
@@ -123,6 +126,7 @@ namespace f_stop {
 				var port = (uint?)serverConfig?.GetInt("Port", (int)F_Stop.DEFAULT_PORT) ?? F_Stop.DEFAULT_PORT;
 				var useSSL = serverConfig?.GetBoolean("UseSSL", F_Stop.DEFAULT_USE_SSL) ?? F_Stop.DEFAULT_USE_SSL;
 				var adminToken = serverConfig?.GetString("AdminToken", F_Stop.DEFAULT_ADMIN_TOKEN) ?? F_Stop.DEFAULT_ADMIN_TOKEN;
+				var validAssetTypes = serverConfig?.GetString("AllowedAssetTypes", F_Stop.DEFAULT_VALID_ASSET_TYPES) ?? F_Stop.DEFAULT_VALID_ASSET_TYPES;
 
 				var cacheConfig = configSource.Configs["Cache"];
 
@@ -131,7 +135,13 @@ namespace f_stop {
 				var protocol = useSSL ? "https" : "http";
 
 				var uri = new Uri($"{protocol}://{address}:{port}");
-				f_stop = new F_Stop(uri, adminToken, negativeCacheItemLifetime);
+				f_stop = new F_Stop(
+					uri,
+					adminToken,
+					negativeCacheItemLifetime,
+					chattelReader,
+					validAssetTypes.Split(',').Select(type => sbyte.Parse(type))
+				);
 
 				f_stop.Start();
 
