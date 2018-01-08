@@ -25,13 +25,15 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace LibF_Stop {
 	internal class Capability {
 		public const uint MAX_QUEUED_REQUESTS = 50;
 
-		public bool IsActive { get; set; } = true; // TODO: when set true, we need to empty the queue. See handle_resume_cap
+		public bool IsActive { get; protected set; } = true;
 
 		public uint BandwidthLimit { get; set; } = 0;
 
@@ -39,10 +41,46 @@ namespace LibF_Stop {
 
 		public void RequestAsset(Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
 			if (!IsActive) { // Paused
-				_requests.Enqueue(new AssetRequest(assetId, handler, errHandler));
+				AssetRequest requestToProcess = null;
+				var gotLock = false;
+				try { // Skiplock: Only locking because of possible shutdown action.
+					Monitor.TryEnter(_requests, ref gotLock);
 
-				if (_requests.Count > MAX_QUEUED_REQUESTS && _requests.TryDequeue(out AssetRequest request)) {
-					request.Respond(new CapQueueFilledException());
+					if (gotLock) {
+						_requests.Enqueue(new AssetRequest(assetId, handler, errHandler));
+
+						if (_requests.Count > MAX_QUEUED_REQUESTS) {
+							_requests.TryDequeue(out requestToProcess);
+						}
+					}
+				}
+				finally {
+					if (gotLock) {
+						Monitor.Exit(_requests);
+					}
+				}
+
+				var errors = new Queue<Exception>(); // Have to make sure both operations below happen, even if they throw.
+
+				if (!gotLock) {
+					// It seems that this cap cannot queue the request. Probably shutting down. Tell the client no such luck.
+					try {
+						errHandler(new CapQueueFilledException());
+					}
+					catch (Exception e) {
+						errors.Enqueue(e);
+					}
+				}
+
+				try {
+					requestToProcess?.Respond(new CapQueueFilledException());
+				}
+				catch (Exception e) {
+					errors.Enqueue(e);
+				}
+
+				if (errors.Count > 0) {
+					throw new AggregateException(errors);
 				}
 
 				return;
@@ -68,6 +106,27 @@ namespace LibF_Stop {
 			}
 
 			handler(asset);
+		}
+
+		public void Pause() {
+			IsActive = false;
+		}
+
+		public void PurgeAndKill() {
+			lock (_requests) { // Lock to prevent the addition of more requests to this cap, and to wait on any being added.
+				IsActive = false;
+				PurgeQueue();
+			}
+		}
+
+		public void Resume() {
+			PurgeQueue();
+			IsActive = true;
+		}
+
+
+		private void PurgeQueue() {
+			// TODO fullfil all the queued asset requests
 		}
 	}
 }

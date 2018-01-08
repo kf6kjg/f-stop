@@ -41,7 +41,6 @@ namespace LibF_Stop {
 
 			return _caps.TryAdd(id, new Capability {
 				BandwidthLimit = bandwidth,
-				IsActive = true,
 			});
 		}
 
@@ -51,7 +50,7 @@ namespace LibF_Stop {
 			}
 
 			if (_caps.TryRemove(id, out Capability cap)) {
-				cap.IsActive = false;
+				cap.PurgeAndKill(); // Make sure to purge the cap.
 
 				return true;
 			}
@@ -65,7 +64,7 @@ namespace LibF_Stop {
 			}
 
 			if (_caps.TryGetValue(id, out Capability cap)) {
-				cap.IsActive = false;
+				cap.Pause();
 
 				return true;
 			}
@@ -79,7 +78,7 @@ namespace LibF_Stop {
 			}
 
 			if (_caps.TryGetValue(id, out Capability cap)) {
-				cap.IsActive = true;
+				cap.Resume();
 
 				return true;
 			}
