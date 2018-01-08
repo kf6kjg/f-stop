@@ -194,7 +194,7 @@ namespace LibF_Stop {
 				else {
 					_capAdmin.RequestMeshAssetOnCap(
 						(Guid)_.capId,
-						(Guid)textureId,
+						(Guid)meshId,
 						asset => {
 							var response = new Response();
 							var data = asset.Data;
