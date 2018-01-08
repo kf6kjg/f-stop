@@ -219,6 +219,35 @@ namespace f_stopHttpApiTests {
 			Assert.That(assetData.SequenceEqual(_knownTextureTGAAsset.Data));
 		}
 
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
+		// Range: <unit>=<range-start>-
+		// Range: <unit>=<range-start>-<range-end>
+		// Range: <unit>=<range-start>-<range-end>, <range-start>-<range-end>
+		// Range: <unit>=<range-start>-<range-end>, <range-start>-<range-end>, <range-start>-<range-end>
+
+		// ^bytes=[0-9]+-([0-9]+)?(, ?[0-9]+-([0-9]+)?){0,2}$
+		// But Aperture limits the spec to
+		// ^bytes=[0-9]+-([0-9]+)?$
+
+		// TODO: check range wrong unit type string. "asdf" RangeError.
+		// TODO: check range wrong range format. "bytes=asdf" RangeError.
+		// TODO: check range starting at 0, no range separator. "bytes=0" RangeError. Aperture has this block commented out, resulting in the error.
+		// TODO: check range starting at N, no range separator. "bytes=5" RangeError. Aperture has this block commented out, resulting in the error.
+		// TODO: check range starting at -N, no end. "bytes=-3" Ok. Aperture treats "-3" same as "0-3".
+		// TODO: check range starting at 0, no end. "bytes=0-" Ok.
+		// TODO: check range starting at N, no end. "bytes=3-" Ok.
+		// TODO: check range no start, ending at N < max. "bytes=-3" Ok.
+		// TODO: check range no start, ending at N = max. "bytes=-10" Ok.
+		// TODO: check range no start, ending at N > max. "bytes=-9999" Ok. Aperture limits to known byte range from asset.
+		// TODO: check range within expected bounds, starting at 0. "bytes=0-4" Ok.
+		// TODO: check range within expected bounds, starting at N. "bytes=5-10" Ok.
+		// TODO: check range exceeding expected bounds, starting at -N. "bytes=-3-5" Ok. Aperture treats "-3--5" and "-3-5" same as "0-3".
+		// TODO: check range exceeding expected bounds, starting at 0 going to -N. "bytes=0--5" Ok. Aperture treats "3--5" same as "3-end".
+		// TODO: check range exceeding expected bounds, starting at 0. "bytes=0-9999" Ok. Aperture limits to known byte range from asset.
+		// TODO: check range exceeding expected bounds, starting at N. "bytes=5-9999" Ok. Aperture limits to known byte range from asset.
+
+		// TODO: figure out a way to test bandwidth limiting.
+
 		[Test]
 		public void TestGetAssetUnknownCapNotFound() {
 			var response = GetAsset(Guid.NewGuid(), _knownTextureAsset.Id);
