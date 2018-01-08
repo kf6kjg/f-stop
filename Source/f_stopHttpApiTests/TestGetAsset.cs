@@ -51,12 +51,12 @@ namespace f_stopHttpApiTests {
 			return response;
 		}
 
-		public static StratusAsset CreateAndCacheAsset(string name, sbyte type, byte[] data) {
+		public static StratusAsset CreateAndCacheAsset(string name, sbyte type, byte[] data, Guid? id = null) {
 			var asset = new StratusAsset {
 				CreateTime = DateTime.UtcNow,
 				Data = data,
 				Description = $"{name} description",
-				Id = Guid.NewGuid(),
+				Id = id ?? Guid.NewGuid(),
 				Local = true,
 				Name = name,
 				StorageFlags = 0,
@@ -64,11 +64,28 @@ namespace f_stopHttpApiTests {
 				Type = type,
 			};
 
-			using (var file = File.Create(Path.Combine(Constants.TEST_CACHE_PATH, asset.Id.ToString("N")))) {
+			var assetPath = UuidToCachePath(asset.Id);
+
+			Directory.CreateDirectory(Directory.GetParent(assetPath).FullName);
+			using (var file = File.Create(assetPath)) {
 				ProtoBuf.Serializer.Serialize(file, asset);
 			}
 
 			return asset;
+		}
+
+		/// <summary>
+		/// Converts a GUID to a path based on the cache location.
+		/// </summary>
+		/// <returns>The path.</returns>
+		/// <param name="id">Asset identifier.</param>
+		private static string UuidToCachePath(Guid id) {
+			var noPunctuationAssetId = id.ToString("N");
+			var path = Constants.TEST_CACHE_PATH;
+			for (var index = 0; index < noPunctuationAssetId.Length; index += 2) {
+				path = Path.Combine(path, noPunctuationAssetId.Substring(index, 2));
+			}
+			return path + ".pbasset";
 		}
 
 		[OneTimeSetUp]
@@ -76,40 +93,48 @@ namespace f_stopHttpApiTests {
 			_capId = Guid.NewGuid();
 			TestAddCap.AddCap(_capId);
 
+			// Using hardcoded GUIDs to make debugging easier.
+
 			_knownTextureAsset = CreateAndCacheAsset(
 				"_knownTextureAsset",
 				0,
-				new byte[] { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A } // JPEG-2000 magic numbers
+				new byte[] { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A }, // JPEG-2000 magic numbers
+				Guid.Parse("01000000-0000-0000-0000-000000000000")
 			);
 
 			_knownTextureTGAAsset = CreateAndCacheAsset(
 				"_knownTextureTGAAsset",
 				12,
-				new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x54, 0x52, 0x55, 0x45, 0x56, 0x49, 0x53, 0x49, 0x4f, 0x4e, 0x2d, 0x58, 0x46, 0x49, 0x4c, 0x45, 0x2e, 0x00 } // TGA uses a footer for some silly historical/legacy reason.  I made some educated guesses for making this a minimal valid TGA, but i've not verified.
+				new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x54, 0x52, 0x55, 0x45, 0x56, 0x49, 0x53, 0x49, 0x4f, 0x4e, 0x2d, 0x58, 0x46, 0x49, 0x4c, 0x45, 0x2e, 0x00 }, // TGA uses a footer for some silly historical/legacy reason.  I made some educated guesses for making this a minimal valid TGA, but i've not verified.
+				Guid.Parse("02000000-0000-0000-0000-000000000000")
 			);
 
 			_knownImageTGAAsset = CreateAndCacheAsset(
 				"_knownImageTGAAsset",
 				18,
-				new byte[] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x54, 0x52, 0x55, 0x45, 0x56, 0x49, 0x53, 0x49, 0x4f, 0x4e, 0x2d, 0x58, 0x46, 0x49, 0x4c, 0x45, 0x2e, 0x00 } // TGA uses a footer for some silly historical/legacy reason.  I made some educated guesses for making this a minimal valid TGA, but i've not verified.
+				new byte[] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x54, 0x52, 0x55, 0x45, 0x56, 0x49, 0x53, 0x49, 0x4f, 0x4e, 0x2d, 0x58, 0x46, 0x49, 0x4c, 0x45, 0x2e, 0x00 }, // TGA uses a footer for some silly historical/legacy reason.  I made some educated guesses for making this a minimal valid TGA, but i've not verified.
+				Guid.Parse("03000000-0000-0000-0000-000000000000")
 			);
 
 			_knownImageJPEGAsset = CreateAndCacheAsset(
 				"_knownImageJPEGAsset",
 				19,
-				new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x00, 0x45, 0x78, 0x69, 0x66, 0x00 } // JPEG-EXIF magic numbers, guessing that's what is used but I could totally be wrong.
+				new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x00, 0x45, 0x78, 0x69, 0x66, 0x00 }, // JPEG-EXIF magic numbers, guessing that's what is used but I could totally be wrong.
+				Guid.Parse("04000000-0000-0000-0000-000000000000")
 			);
 
 			_knownMeshAsset = CreateAndCacheAsset(
 				"_knownMeshAsset",
 				49,
-				new byte[] {  } // TODO: find out what this one's is if any.
+				new byte[] { 0xfa }, // TODO: find out what this one's is if any.
+				Guid.Parse("05000000-0000-0000-0000-000000000000")
 			);
 
 			_knownNotecardAsset = CreateAndCacheAsset(
 				"_knownNotecardAsset",
 				7,
-				Encoding.UTF8.GetBytes("Just some text.")
+				Encoding.UTF8.GetBytes("Just some text."),
+				Guid.Parse("06000000-0000-0000-0000-000000000000")
 			);
 		}
 
@@ -171,13 +196,13 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureSame() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id);
-			var assetData = Encoding.ASCII.GetBytes(response.Content);
+			var assetData = response.RawBytes;
 			Assert.That(assetData.SequenceEqual(_knownTextureAsset.Data));
 		}
 
 		[Test]
 		public void TestGetAssetKnownTextureTGAContentType() {
-			var response = GetAsset(_capId, _knownTextureAsset.Id);
+			var response = GetAsset(_capId, _knownTextureTGAAsset.Id);
 			Assert.AreEqual("image/x-tga", response.ContentType); // That MIME type is an extension to the 
 		}
 
@@ -190,7 +215,7 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureTGASame() {
 			var response = GetAsset(_capId, _knownTextureTGAAsset.Id);
-			var assetData = Encoding.ASCII.GetBytes(response.Content);
+			var assetData = response.RawBytes;
 			Assert.That(assetData.SequenceEqual(_knownTextureTGAAsset.Data));
 		}
 

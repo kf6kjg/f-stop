@@ -83,7 +83,7 @@ namespace f_stopHttpApiTests {
 				Constants.SERVICE_ADMIN_TOKEN,
 				TimeSpan.FromSeconds(Constants.SERVICE_NC_LIFETIME_SECONDS),
 				chattelReader,
-				new List<sbyte>{ 0, 12, 18, 19, 49 }
+				new List<sbyte>{ 0, 12, /*18, 19,*/ 49 }
 			);
 
 			_service.Start();
