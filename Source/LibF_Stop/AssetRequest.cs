@@ -29,7 +29,7 @@ using InWorldz.Data.Assets.Stratus;
 namespace LibF_Stop {
 	public class AssetRequest {
 		public delegate void AssetRequestHandler(StratusAsset asset);
-		public delegate void AssetErrorHandler(Exception error);
+		public delegate void AssetErrorHandler(AssetError error);
 
 		public Guid AssetId { get; protected set; }
 
@@ -61,11 +61,7 @@ namespace LibF_Stop {
 			_errHandler = null;
 		}
 
-		public void Respond(Exception err) {
-			if (err == null) {
-				throw new ArgumentNullException(nameof(err));
-			}
-
+		public void Respond(AssetError err) {
 			if (_handler != null) {
 				throw new AssetAlreadySetException($"Cannot call {nameof(Respond)} twice!");
 			}

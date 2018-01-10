@@ -154,29 +154,31 @@ namespace LibF_Stop {
 				var completionSource = new System.Threading.Tasks.TaskCompletionSource<Response>();
 
 				AssetRequest.AssetErrorHandler errorHandler = error => {
-					if (error is InvalidCapabilityIdException) {
-						LOG.Warn($"Request on nonexistent cap from {Request.UserHostAddress}", error);
-						completionSource.SetResult(StockReply.NotFound);
-					}
-					else if (error is WrongAssetTypeException) {
-						LOG.Warn($"Request for wrong kind of asset from {Request.UserHostAddress}", error);
-						completionSource.SetResult(StockReply.BadRequest);
-					}
-					else if (error is ConfigException) {
-						LOG.Warn($"Configuration incomplete!", error);
-						completionSource.SetResult(StockReply.InternalServerError);
-					}
-					else if (error is AssetIdUnknownException) {
-						LOG.Warn($"Request for unknown asset from {Request.UserHostAddress}", error);
-						completionSource.SetResult(StockReply.NotFound);
-					}
-					else if (error is CapQueueFilledException) {
-						LOG.Warn($"Request from {Request.UserHostAddress} had to be dropped because cap {_.capId} is paused and filled", error);
-						completionSource.SetResult(StockReply.NotFound);
-					}
-					else {
-						LOG.Warn($"Request from {Request.UserHostAddress} had unexpected error!", error);
-						completionSource.SetResult(StockReply.InternalServerError);
+					switch (error.Error) {
+						case AssetErrorType.CapabilityIdUnknown:
+							LOG.Warn($"Request on nonexistent cap from {Request.UserHostAddress} {error.Message}");
+							completionSource.SetResult(StockReply.NotFound);
+						break;
+						case AssetErrorType.AssetTypeWrong:
+							LOG.Warn($"Request for wrong kind of asset from {Request.UserHostAddress} {error.Message}");
+							completionSource.SetResult(StockReply.BadRequest);
+						break;
+						case AssetErrorType.ConfigIncorrect:
+							LOG.Warn($"Configuration incomplete! {error.Message}");
+							completionSource.SetResult(StockReply.InternalServerError);
+						break;
+						case AssetErrorType.AssetIdUnknown:
+							LOG.Warn($"Request for unknown asset from {Request.UserHostAddress} {error.Message}");
+							completionSource.SetResult(StockReply.NotFound);
+						break;
+						case AssetErrorType.QueueFilled:
+							LOG.Warn($"Request from {Request.UserHostAddress} had to be dropped because cap {_.capId} is paused and filled. {error.Message}");
+							completionSource.SetResult(StockReply.NotFound);
+						break;
+						default:
+							LOG.Warn($"Request from {Request.UserHostAddress} had unexpected error! {error.Message}");
+							completionSource.SetResult(StockReply.InternalServerError);
+						break;
 					}
 				};
 

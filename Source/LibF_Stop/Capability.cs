@@ -65,7 +65,9 @@ namespace LibF_Stop {
 				if (!gotLock) {
 					// It seems that this cap cannot queue the request. Probably shutting down. Tell the client no such luck.
 					try {
-						errHandler(new CapQueueFilledException());
+						errHandler(new AssetError {
+							Error = AssetErrorType.QueueFilled,
+						});
 					}
 					catch (Exception e) {
 						errors.Enqueue(e);
@@ -73,7 +75,9 @@ namespace LibF_Stop {
 				}
 
 				try {
-					requestToProcess?.Respond(new CapQueueFilledException());
+					requestToProcess?.Respond(new AssetError {
+						Error = AssetErrorType.QueueFilled,
+					});
 				}
 				catch (Exception e) {
 					errors.Enqueue(e);
@@ -90,18 +94,26 @@ namespace LibF_Stop {
 			var reader = ConfigSingleton.ChattelReader;
 			if (reader == null) {
 				// There's no Chattel. Fail.
-				errHandler(new ConfigException("Chattel was null!"));
+				errHandler(new AssetError {
+					Error = AssetErrorType.ConfigIncorrect,
+					Message = "Chattel was null!",
+				});
 				return;
 			}
 
 			reader.GetAssetAsync(assetId, asset => {
 				if (asset == null) {
-					errHandler(new AssetIdUnknownException($"Could not find any asset with ID {assetId}"));
+					errHandler(new AssetError {
+						Error = AssetErrorType.AssetIdUnknown,
+						Message = $"Could not find any asset with ID {assetId}",
+					});
 					return;
 				}
 
 				if (!ConfigSingleton.ValidTypes.Contains(asset.Type)) {
-					errHandler(new WrongAssetTypeException());
+					errHandler(new AssetError {
+						Error = AssetErrorType.AssetTypeWrong,
+					});
 					return;
 				}
 

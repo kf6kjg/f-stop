@@ -1,9 +1,9 @@
-﻿// ConfigException.cs
+﻿// AssetError.cs
 //
 // Author:
-//       Ricky Curtice <ricky@rwcproductions.com>
+//       Ricky C <>
 //
-// Copyright (c) 2018 Richard Curtice
+// Copyright (c) 2018 
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,18 @@
 // THE SOFTWARE.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace LibF_Stop {
-	internal class ConfigException : Exception {
-		public ConfigException() {
-		}
+	public struct AssetError {
+		public AssetErrorType Error;
+		public string Message;
+	}
 
-		public ConfigException(string message) : base(message) {
-		}
-
-		public ConfigException(string message, Exception innerException) : base(message, innerException) {
-		}
-
-		protected ConfigException(SerializationInfo info, StreamingContext context) : base(info, context) {
-		}
+	public enum AssetErrorType {
+		AssetIdUnknown,
+		QueueFilled,
+		ConfigIncorrect,
+		CapabilityIdUnknown,
+		AssetTypeWrong,
 	}
 }

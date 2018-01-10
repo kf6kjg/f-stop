@@ -113,7 +113,9 @@ namespace LibF_Stop {
 								handler(asset);
 							break;
 							default:
-								errHandler(new WrongAssetTypeException());
+								errHandler(new AssetError {
+									Error = AssetErrorType.AssetTypeWrong,
+								});
 							break;
 						}
 					},
@@ -123,7 +125,9 @@ namespace LibF_Stop {
 				return;
 			}
 
-			errHandler(new InvalidCapabilityIdException());
+			errHandler(new AssetError {
+				Error = AssetErrorType.CapabilityIdUnknown,
+			});
 		}
 
 		public void RequestMeshAssetOnCap(Guid capId, Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
@@ -135,7 +139,9 @@ namespace LibF_Stop {
 							handler(asset);
 						}
 						else {
-							errHandler(new WrongAssetTypeException());
+							errHandler(new AssetError {
+								Error = AssetErrorType.AssetTypeWrong,
+							});
 						}
 					},
 					errHandler
@@ -144,7 +150,9 @@ namespace LibF_Stop {
 				return;
 			}
 
-			errHandler(new InvalidCapabilityIdException());
+			errHandler(new AssetError {
+				Error = AssetErrorType.CapabilityIdUnknown,
+			});
 		}
 	}
 }
