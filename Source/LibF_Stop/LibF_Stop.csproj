@@ -40,9 +40,6 @@
     <Reference Include="Marvin.JsonPatch">
       <HintPath>..\..\packages\Marvin.JsonPatch.Signed.0.7.0\lib\portable-net40+win+wpa81\Marvin.JsonPatch.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net">
-      <HintPath>..\..\packages\protobuf-net.2.3.2\lib\net40\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Reflection.TypeExtensions">
       <HintPath>..\..\packages\System.Reflection.TypeExtensions.4.4.0\lib\net461\System.Reflection.TypeExtensions.dll</HintPath>
@@ -60,14 +57,8 @@
     <Reference Include="Nini">
       <HintPath>..\..\packages\Trove.Nini.1.1.0.0\lib\net20\Nini.dll</HintPath>
     </Reference>
-    <Reference Include="Chattel">
-      <HintPath>..\..\packages\Chattel.1.4.0.52\lib\net461\Chattel.dll</HintPath>
-    </Reference>
     <Reference Include="CSJ2K">
       <HintPath>..\..\packages\CSJ2K.2.0.0.1\lib\net40-client\CSJ2K.dll</HintPath>
-    </Reference>
-    <Reference Include="Chattel-AssetTools">
-      <HintPath>..\..\packages\Chattel-AssetTools.1.4.0.52\lib\net461\Chattel-AssetTools.dll</HintPath>
     </Reference>
     <Reference Include="Nancy.Hosting.Self">
       <HintPath>..\..\packages\Nancy.Hosting.Self.1.4.1\lib\net40\Nancy.Hosting.Self.dll</HintPath>
@@ -76,6 +67,15 @@
       <HintPath>..\..\packages\Nancy.1.4.4\lib\net40\Nancy.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="protobuf-net">
+      <HintPath>..\..\packages\protobuf-net.2.3.3\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="Chattel">
+      <HintPath>..\..\packages\Chattel.1.5.0.66\lib\net461\Chattel.dll</HintPath>
+    </Reference>
+    <Reference Include="Chattel-AssetTools">
+      <HintPath>..\..\packages\Chattel-AssetTools.1.5.0.66\lib\net461\Chattel-AssetTools.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="F_StopRouter.cs" />

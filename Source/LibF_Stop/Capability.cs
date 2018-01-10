@@ -94,18 +94,19 @@ namespace LibF_Stop {
 				return;
 			}
 
-			var asset = reader.GetAssetSync(assetId);
-			if (asset == null) {
-				errHandler(new AssetIdUnknownException($"Could not find any asset with ID {assetId}"));
-				return;
-			}
+			reader.GetAssetAsync(assetId, asset => {
+				if (asset == null) {
+					errHandler(new AssetIdUnknownException($"Could not find any asset with ID {assetId}"));
+					return;
+				}
 
-			if (!ConfigSingleton.ValidTypes.Contains(asset.Type)) {
-				errHandler(new WrongAssetTypeException());
-				return;
-			}
+				if (!ConfigSingleton.ValidTypes.Contains(asset.Type)) {
+					errHandler(new WrongAssetTypeException());
+					return;
+				}
 
-			handler(asset);
+				handler(asset);
+			});
 		}
 
 		public void Pause() {
