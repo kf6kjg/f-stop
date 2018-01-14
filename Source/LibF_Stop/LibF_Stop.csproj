@@ -92,6 +92,7 @@
     <Compile Include="AssetAlreadySetException.cs" />
     <Compile Include="AssetIdUnknownException.cs" />
     <Compile Include="AssetError.cs" />
+    <Compile Include="Range.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
