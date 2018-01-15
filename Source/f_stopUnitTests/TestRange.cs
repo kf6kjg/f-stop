@@ -164,7 +164,6 @@ namespace f_stopUnitTests {
 
 		#endregion
 
-
 		#region GetRange
 
 		[Test]
@@ -231,6 +230,119 @@ namespace f_stopUnitTests {
 
 		#endregion
 
+		#region ParseRanges Invalid
+
+		[Test]
+		public void TestRange_ParseRanges_null_IsNull() {
+			Assert.IsNull(Range.ParseRanges(null));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_asdf_0dash0_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("asdf=0-0"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_asdf_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=asdf"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_dash1dash5_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=-1-5"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=0"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dashdash5_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=0--5"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_3_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=3"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_8dash3_ArgumentOutOfRangeException() {
+			Assert.Throws<ArgumentOutOfRangeException>(() => Range.ParseRanges("bytes=8-3"));
+		}
+
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_asdf_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=a0-0, sdf"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_dash1dash5_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=0-0, -1-5"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_0_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=0-0, 0"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_0dashdash5_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=0-0, 0--5"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_3_FormatException() {
+			Assert.Throws<FormatException>(() => Range.ParseRanges("bytes=0-0, 3"));
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_8dash3_ArgumentOutOfRangeException() {
+			Assert.Throws<ArgumentOutOfRangeException>(() => Range.ParseRanges("bytes=,, ,,, 0-0, 8-3"));
+		}
+
+		#endregion
+
+		#region ParseRanges Valid
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash0_Correct() {
+			var expected = new List<Range> { new Range(0, 0) };
+			var ranges = Range.ParseRanges("bytes=0-0");
+			Assert.AreEqual(expected, ranges);
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_0dash1_2dash3_4dash5_6dash7_Correct() {
+			var expected = new List<Range> { new Range(0, 1), new Range(2, 3), new Range(4, 5), new Range(6, 7) };
+			var ranges = Range.ParseRanges("bytes=0-1,2-3,4-5, ,  6-7");
+			Assert.AreEqual(expected, ranges);
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_dash1_Correct() {
+			var expected = new List<Range> { new Range(null, -1) };
+			var ranges = Range.ParseRanges("bytes=-1");
+			Assert.AreEqual(expected, ranges);
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_1dash_Correct() {
+			var expected = new List<Range> { new Range(1, null) };
+			var ranges = Range.ParseRanges("bytes=1-");
+			Assert.AreEqual(expected, ranges);
+		}
+
+		[Test]
+		public void TestRange_ParseRanges_bytes_1dash_dash2_Correct() {
+			var expected = new List<Range> { new Range(1, null), new Range(null, -2) };
+			var ranges = Range.ParseRanges("bytes=1-, -2");
+			Assert.AreEqual(expected, ranges);
+		}
+
+		#endregion
 
 		#region ToString
 

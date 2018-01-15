@@ -25,9 +25,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace LibF_Stop {
-	public struct Range {
+	public struct Range : IEquatable<Range> {
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
+		// https://tools.ietf.org/html/rfc7233#appendix-D
+		// http://rextester.com/YSKLH42433
+		// Aperture incorrectly limits the spec to
+		// ^bytes=[0-9]+-([0-9]+)?$
+		private static readonly Regex _rangeHeaderValuePattern = new Regex(@"^bytes=(,[\s]*)*(([0-9]+-([0-9]+)?)|(-[0-9]+))([\s]*,([\s]*(([0-9]+-([0-9]+)?)|(-[0-9]+)))?)*$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+		private static readonly Regex _rangeHeaderValueParsePattern = new Regex(@"([0-9]+-(?:[0-9]+)?)|(-[0-9]+)", RegexOptions.Compiled);
+
 		public int? Min;
 		public int? Max;
 
@@ -72,6 +81,56 @@ namespace LibF_Stop {
 			*/
 		}
 
+		public static IEnumerable<Range> ParseRanges(string range) {
+			if (range == null) {
+				return null;
+			}
+
+			if (!_rangeHeaderValuePattern.IsMatch(range)) {
+				// Failed pattern match.
+				throw new FormatException();
+			}
+
+			var ranges = new List<Range>();
+
+			// Parse and store the ranges.
+
+			var rangeMatches = _rangeHeaderValueParsePattern.Matches(range);
+
+			foreach (Match match in rangeMatches) {
+				var first = true; // Can't use Linq with these silly things.
+				foreach (Group matchGroup in match.Groups) {
+					if (first) { // The 0th item is the whole match, not just the groups.
+						first = false;
+						continue;
+					}
+
+					var rangeStr = matchGroup.Value.Trim();
+
+					var dashPos = rangeStr.IndexOf('-');
+					// According to spec it should always have exactly one dash per range.
+					// For now that means we've got a noise entry, possibly from the Regex parser...
+					if (dashPos < 0) {
+						continue;
+					}
+
+					if (dashPos == 0) { // Starts with a dash.
+						ranges.Add(new Range(null, int.Parse(rangeStr)));
+						continue;
+					}
+
+					if (dashPos + 1 == rangeStr.Length) { // Ends with a dash
+						ranges.Add(new Range(int.Parse(rangeStr.Substring(0, dashPos)), null));
+						continue;
+					}
+
+					ranges.Add(new Range(int.Parse(rangeStr.Substring(0, dashPos)), int.Parse(rangeStr.Substring(dashPos + 1))));
+				}
+			}
+
+			return ranges;
+		}
+
 		public IEnumerable<T> GetRange<T>(IEnumerable<T> list) {
 			if (list == null || (Min == null && Max == null)) {
 				return null;
@@ -103,6 +162,10 @@ namespace LibF_Stop {
 			}
 
 			return $"{Min}-{Max}";
+		}
+
+		bool IEquatable<Range>.Equals(Range other) {
+			return Min == other.Min && Max == other.Max;
 		}
 	}
 }
