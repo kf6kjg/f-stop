@@ -31,6 +31,8 @@ using System.Net;
 using System.Text;
 using System.Linq;
 using InWorldz.Data.Assets.Stratus;
+using LibF_Stop;
+using System.Collections.Generic;
 
 namespace f_stopHttpApiTests {
 	[TestFixture]
@@ -43,10 +45,18 @@ namespace f_stopHttpApiTests {
 		private StratusAsset _knownMeshAsset;
 		private StratusAsset _knownNotecardAsset;
 
-		public static IRestResponse GetAsset(Guid capId, Guid assetId, string type = "texture_id") {
+		public static IRestResponse GetAsset(Guid capId, Guid assetId, string type = "texture_id", IEnumerable<Range> ranges = null) {
 			var client = new RestClient(Constants.SERVICE_URI);
 			var url = $"/CAPS/HTT/{capId.ToString("N")}?{type}={assetId.ToString("N")}";
 			var request = new RestRequest(url, Method.GET);
+			if (ranges != null) {
+				var rangesFormatted = ranges
+					.Select(range => range.ToString())
+					.Where(range => range != null)
+					.Aggregate((aggregate, newRange) => $"{aggregate},{newRange}")
+				;
+				request.AddHeader("Range", $"bytes={rangesFormatted}"); // Aperture only supports single range, but this supports much more.
+			}
 			var response = client.Execute(request);
 			return response;
 		}
@@ -203,7 +213,7 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureTGAContentType() {
 			var response = GetAsset(_capId, _knownTextureTGAAsset.Id);
-			Assert.AreEqual("image/x-tga", response.ContentType); // That MIME type is an extension to the 
+			Assert.AreEqual("image/x-tga", response.ContentType); // That MIME type is an extension to the official spec.
 		}
 
 		[Test]
@@ -219,32 +229,260 @@ namespace f_stopHttpApiTests {
 			Assert.That(assetData.SequenceEqual(_knownTextureTGAAsset.Data));
 		}
 
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
-		// Range: <unit>=<range-start>-
-		// Range: <unit>=<range-start>-<range-end>
-		// Range: <unit>=<range-start>-<range-end>, <range-start>-<range-end>
-		// Range: <unit>=<range-start>-<range-end>, <range-start>-<range-end>, <range-start>-<range-end>
+		#region Range errors
 
-		// ^bytes=[0-9]+-([0-9]+)?(, ?[0-9]+-([0-9]+)?){0,2}$
-		// But Aperture limits the spec to
-		// ^bytes=[0-9]+-([0-9]+)?$
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0_RequestedRangeNotSatisfiable() {
+			// Aperture has this block commented out, resulting in the error to match spec.
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=0");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
 
-		// TODO: check range wrong unit type string. "asdf" RangeError.
-		// TODO: check range wrong range format. "bytes=asdf" RangeError.
-		// TODO: check range starting at 0, no range separator. "bytes=0" RangeError. Aperture has this block commented out, resulting in the error.
-		// TODO: check range starting at N, no range separator. "bytes=5" RangeError. Aperture has this block commented out, resulting in the error.
-		// TODO: check range starting at -N, no end. "bytes=-3" Ok. Aperture treats "-3" same as "0-3".
-		// TODO: check range starting at 0, no end. "bytes=0-" Ok.
-		// TODO: check range starting at N, no end. "bytes=3-" Ok.
-		// TODO: check range no start, ending at N < max. "bytes=-3" Ok.
-		// TODO: check range no start, ending at N = max. "bytes=-10" Ok.
-		// TODO: check range no start, ending at N > max. "bytes=-9999" Ok. Aperture limits to known byte range from asset.
-		// TODO: check range within expected bounds, starting at 0. "bytes=0-4" Ok.
-		// TODO: check range within expected bounds, starting at N. "bytes=5-10" Ok.
-		// TODO: check range exceeding expected bounds, starting at -N. "bytes=-3-5" Ok. Aperture treats "-3--5" and "-3-5" same as "0-3".
-		// TODO: check range exceeding expected bounds, starting at 0 going to -N. "bytes=0--5" Ok. Aperture treats "3--5" same as "3-end".
-		// TODO: check range exceeding expected bounds, starting at 0. "bytes=0-9999" Ok. Aperture limits to known byte range from asset.
-		// TODO: check range exceeding expected bounds, starting at N. "bytes=5-9999" Ok. Aperture limits to known byte range from asset.
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_9999dash_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=9999-");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_9999dash99999_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=9999-9999");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_asdf_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=asdf");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRangeWrongRangeFormat_3_RequestedRangeNotSatisfiable() {
+			// Aperture has this block commented out, resulting in the error to match spec.
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=3");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRangeWrongUnitType_asdf_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"asdf=0-0");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_8dash3_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=8-3");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dash3dash5_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Authentication", $"bytes=-3-5");
+			request.AddHeader("Range", $"bytes=-3-5");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dashdash5_RequestedRangeNotSatisfiable() {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			request.AddHeader("Range", $"bytes=0--5");
+			var response = client.Execute(request);
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
+		#endregion
+
+		#region Valid Ranges
+
+		// TODO: verify the Content-Range header.
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash0_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0) });
+			Assert.AreEqual(_knownTextureAsset.Data.Take(1), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash0_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0)});
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
+			Assert.AreEqual(_knownTextureAsset.Data, response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash4_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
+			Assert.AreEqual(_knownTextureAsset.Data.Take(5), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash4_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_3dash_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
+			Assert.AreEqual(_knownTextureAsset.Data.Skip(3), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_3dash_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash5_CorrectData() {
+			// One byte only.
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
+			Assert.AreEqual(_knownTextureAsset.Data.Skip(5).Take(1), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash5_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dash3_CorrectData() {
+			// Aperture treats "-3" same as "0-3" which is wrong.
+			// Correct RFC7233 page 6 result: the last 3 bytes.
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+			Assert.AreEqual(_knownTextureAsset.Data.Skip(_knownTextureAsset.Data.Length - 4), response.RawBytes);
+}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dash3_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dashMax_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length + 1) });
+			Assert.AreEqual(_knownTextureAsset.Data, response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dashMax_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length + 1) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dash9999_CorrectData() {
+			// Aperture limits to known byte range from asset.
+
+			// TODO: I'm not sure this one's right, should this be an error?
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
+			Assert.AreEqual(_knownTextureAsset.Data, response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dash9999_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash10_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
+			Assert.AreEqual(_knownTextureAsset.Data.Skip(5).Take(1 + 10 - 5), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash10_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash9999_CorrectData() {
+			// Aperture limits to known byte range from asset.
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
+			Assert.AreEqual(_knownTextureAsset.Data.Take(9999), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash9999_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash9999_CorrectData() {
+			// Aperture limits to known byte range from asset.
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
+			Assert.AreEqual(_knownTextureAsset.Data.Skip(5).Take(1 + 9999 - 5), response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash9999_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
+			Assert.AreEqual(_knownTextureAsset.Data, response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
+			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		#endregion
 
 		// TODO: figure out a way to test bandwidth limiting.
 
