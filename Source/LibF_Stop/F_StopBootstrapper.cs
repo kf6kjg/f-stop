@@ -26,14 +26,16 @@
 using System;
 using System.Text;
 using Nancy;
+using Nancy.Bootstrapper;
 using Nancy.ErrorHandling;
+using Nancy.TinyIoc;
 
 namespace LibF_Stop {
 	// Automagically called by the default bootstrapper.
 	public class F_StopBootstrapper : DefaultNancyBootstrapper {
 		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		protected override void ApplicationStartup(Nancy.TinyIoc.TinyIoCContainer container, Nancy.Bootstrapper.IPipelines pipelines) {
+		protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines) {
 			base.ApplicationStartup(container, pipelines);
 
 			pipelines.OnError += (context, exception) => {
@@ -53,6 +55,14 @@ namespace LibF_Stop {
 #if DEBUG
 			StaticConfiguration.DisableErrorTraces = false;
 #endif
+		}
+
+		protected override void RequestStartup(TinyIoCContainer container, IPipelines pipelines, NancyContext context) {
+			base.RequestStartup(container, pipelines, context);
+
+			pipelines.AfterRequest.AddItemToEndOfPipeline(c => {
+				c.Response.Headers["Accept-Ranges"] = "bytes";
+			});
 		}
 	}
 }
