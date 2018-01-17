@@ -328,7 +328,12 @@ namespace f_stopHttpApiTests {
 
 		#region Valid Ranges
 
-		// TODO: verify the Content-Range header.
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash0_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 0-0/{_knownTextureAsset.Data.Length}", contentRange);
+		}
 
 		[Test]
 		public void TestGetAssetKnownTextureByteRange_0dash0_CorrectData() {
@@ -337,7 +342,7 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_0dash0_Ok() {
+		public void TestGetAssetKnownTextureByteRange_0dash0_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0)});
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
@@ -351,7 +356,14 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureByteRange_0dash_Ok() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
-			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash4_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 0-4/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
@@ -361,9 +373,16 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_0dash4_Ok() {
+		public void TestGetAssetKnownTextureByteRange_0dash4_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_3dash_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 3-{_knownTextureAsset.Data.Length - 1}/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
@@ -373,9 +392,16 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_3dash_Ok() {
+		public void TestGetAssetKnownTextureByteRange_3dash_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash5_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 5-5/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
@@ -386,9 +412,16 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_5dash5_Ok() {
+		public void TestGetAssetKnownTextureByteRange_5dash5_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_dash3_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 0-{_knownTextureAsset.Data.Length - 4}/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
@@ -397,10 +430,10 @@ namespace f_stopHttpApiTests {
 			// Correct RFC7233 page 6 result: the last 3 bytes.
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
 			Assert.AreEqual(_knownTextureAsset.Data.Skip(_knownTextureAsset.Data.Length - 4), response.RawBytes);
-}
+		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_dash3_Ok() {
+		public void TestGetAssetKnownTextureByteRange_dash3_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
@@ -414,7 +447,7 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureByteRange_dashMax_Ok() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length + 1) });
-			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
@@ -429,7 +462,14 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureByteRange_dash9999_Ok() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
-			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash10_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 5-10/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
@@ -439,7 +479,7 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_5dash10_Ok() {
+		public void TestGetAssetKnownTextureByteRange_5dash10_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
@@ -454,7 +494,14 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureByteRange_0dash9999_Ok() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
-			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_5dash9999_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
+			var contentRange = response.Headers.Where(param => param.Name == "Content-Range").Select(param => (string)param.Value).FirstOrDefault();
+			Assert.AreEqual($"bytes 5-{_knownTextureAsset.Data.Length - 1}/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
@@ -465,12 +512,12 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRange_5dash9999_Ok() {
+		public void TestGetAssetKnownTextureByteRange_5dash9999_PartialContent() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
-		[Test]
+		[Test] // I decided that this server should respond with the single-range type response if the multipart request coalesced into a single range.
 		public void TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_CorrectData() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
 			Assert.AreEqual(_knownTextureAsset.Data, response.RawBytes);
@@ -479,6 +526,25 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public void TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_Ok() {
 			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectMediaType() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+			Assert.That(response.ContentType.StartsWith("multipart/byteranges; boundary=", StringComparison.Ordinal));
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectData() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+			// TODO: multipart range header and body tests...
+			Assert.AreEqual($@"", response.RawBytes);
+		}
+
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_0dash1_5dash8_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
