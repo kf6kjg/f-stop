@@ -495,5 +495,40 @@ namespace f_stopUnitTests {
 		}
 
 		#endregion
+
+		#region Equals
+
+		[Test]
+		public void TestRange_Equals_null_dash2_null_dash2_Equal() {
+			Assert.AreEqual(new Range(null, -2), new Range(null, -2));
+		}
+
+		[Test]
+		public void TestRange_Equals_1_null_1_null_Equal() {
+			Assert.AreEqual(new Range(1, null), new Range(1, null));
+		}
+
+		[Test]
+		public void TestRange_Equals_1_2_1_2_Equal() {
+			Assert.AreEqual(new Range(1, 2), new Range(1, 2));
+		}
+
+		[Test]
+		public void TestRange_Equals_null_dash2_2_null_NotEqual() {
+			Assert.AreNotEqual(new Range(null, -2), new Range(2, null));
+		}
+
+		[Test]
+		public void TestRange_Equals_1_null_null_dash1_NotEqual() {
+			Assert.AreNotEqual(new Range(1, null), new Range(null, -1));
+		}
+
+		[Test]
+		public void TestRange_Equals_1_2_2_3_NotEqual() {
+			Assert.AreNotEqual(new Range(1, 2), new Range(2, 3));
+		}
+
+
+		#endregion
 	}
 }
