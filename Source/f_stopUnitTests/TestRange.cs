@@ -369,6 +369,72 @@ namespace f_stopUnitTests {
 
 		#endregion
 
+		#region SortAndCoalesceRanges
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_null_0_ArgumentNullException() {
+			Assert.Throws<ArgumentNullException>(() => Range.SortAndCoalesceRanges(null, 0));
+		}
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_new_0_NoContent() {
+			Assert.False(Range.SortAndCoalesceRanges(new List<Range>(), 0).Any());
+		}
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_list_dash1_ArgumentOutOfRangeException() {
+			var list = new List<Range> {
+				new Range(0, 0),
+			};
+			Assert.Throws<ArgumentOutOfRangeException>(() => Range.SortAndCoalesceRanges(list, -1));
+		}
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_single_Correct() {
+			var list = new List<Range> {
+				new Range(0, 0),
+			};
+			var result = Range.SortAndCoalesceRanges(list, 32);
+			Assert.AreEqual(list, result);
+		}
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_nonoverlap_Correct() {
+			var list = new List<Range> {
+				new Range(0, 0),
+				new Range(5, 10),
+			};
+			var result = Range.SortAndCoalesceRanges(list, 32);
+			Assert.AreEqual(list, result);
+		}
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_overlapSimple_Correct() {
+			var list = new List<Range> {
+				new Range(0, 0),
+				new Range(0, 10),
+			};
+			var result = Range.SortAndCoalesceRanges(list, 32);
+			Assert.AreEqual(new List<Range> {
+				new Range(0, 10),
+			}, result);
+		}
+
+		[Test]
+		public void TestRange_SortAndCoalesceRanges_overlapComplex_Correct() {
+			var list = new List<Range> {
+				new Range(0, 10),
+				new Range(null, -2),
+				new Range(5, null),
+			};
+			var result = Range.SortAndCoalesceRanges(list, 32);
+			Assert.AreEqual(new List<Range> {
+				new Range(0, 31),
+			}, result);
+		}
+
+		#endregion
+
 		#region Normallize
 
 		[Test]

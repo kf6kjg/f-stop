@@ -146,6 +146,37 @@ namespace LibF_Stop {
 			return ranges;
 		}
 
+		public static IEnumerable<Range> SortAndCoalesceRanges(IEnumerable<Range> ranges, int targetSize) {
+			ranges = ranges ?? throw new ArgumentNullException(nameof(ranges));
+			if (!ranges.Any()) {
+				return ranges;
+			}
+
+			var output = new List<Range>();
+			var byMin = ranges
+				.Select(range => range.Normallize(targetSize)) // Because of this there will be no nulls or negative numbers in the ranges.
+				.OrderBy(range => range.Min) // O(n log n)
+			;
+			
+			var current = byMin.First();
+
+			foreach (var range in byMin.Skip(1)) { // O(n)
+				if (current.Max >= range.Min) {
+					// If the current range's max overlaps the new range's min, they can be coalesced.
+					current.Max = range.Max;
+				}
+				else {
+					// New range cannot be coalesced into the current range, so set the current for output and make the new one current.
+					output.Add(current);
+					current = range;
+				}
+			}
+
+			output.Add(current);
+
+			return output;
+		}
+
 		public IEnumerable<T> GetRange<T>(IEnumerable<T> list) {
 			if (list == null || (Min == null && Max == null)) {
 				return null;
