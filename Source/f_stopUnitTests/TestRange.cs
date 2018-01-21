@@ -192,39 +192,39 @@ namespace f_stopUnitTests {
 
 		[Test]
 		public void TestRange_GetRange_0_Null_Correct() {
-			var list = new List<byte> {0, 1, 2, 3, 4, 5};
+			var list = new List<byte> { 0, 1, 2, 3, 4, 5 };
 			Assert.AreEqual(list, new Range(0, null).GetRange(list));
 		}
 
 		[Test]
 		public void TestRange_GetRange_1_Null_Correct() {
-			var list = new List<byte> {0, 1, 2, 3, 4, 5};
+			var list = new List<byte> { 0, 1, 2, 3, 4, 5 };
 			Assert.AreEqual(list.Skip(1), new Range(1, null).GetRange(list));
 		}
 
 
 		[Test]
 		public void TestRange_GetRange_0_0_Correct() {
-			var list = new List<byte> {0, 1, 2, 3, 4, 5};
+			var list = new List<byte> { 0, 1, 2, 3, 4, 5 };
 			Assert.AreEqual(list.Take(1), new Range(0, 0).GetRange(list));
 		}
 
 		[Test]
 		public void TestRange_GetRange_0_1_Correct() {
-			var list = new List<byte> {0, 1, 2, 3, 4, 5};
+			var list = new List<byte> { 0, 1, 2, 3, 4, 5 };
 			Assert.AreEqual(list.Take(2), new Range(0, 1).GetRange(list));
 		}
 
 
 		[Test]
 		public void TestRange_GetRange_1_1_Correct() {
-			var list = new List<byte> {0, 1, 2, 3, 4, 5};
+			var list = new List<byte> { 0, 1, 2, 3, 4, 5 };
 			Assert.AreEqual(list.Skip(1).Take(1), new Range(1, 1).GetRange(list));
 		}
 
 		[Test]
 		public void TestRange_GetRange_1_2_Correct() {
-			var list = new List<byte> {0, 1, 2, 3, 4, 5};
+			var list = new List<byte> { 0, 1, 2, 3, 4, 5 };
 			Assert.AreEqual(list.Skip(1).Take(2), new Range(1, 2).GetRange(list));
 		}
 
