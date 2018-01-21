@@ -151,20 +151,40 @@ namespace LibF_Stop {
 				return null;
 			}
 
-			var min = Min ?? 0;
 			var len = list.Count();
-			var max = Max ?? len - 1;
+			var normRange = Normallize(len);
 
-			if (max < 0) {
-				min = len + max;
-				max = len - 1;
-			}
-
-			if (min < 0 || max < 0 || min > max) {
-				throw new IndexOutOfRangeException($"Range invalid for given list! After normallizing to list length {len}, the range was [{min}, {max}]");
-			}
+			var min = normRange.Min ?? 0;
+			var max = normRange.Max ?? len;
 
 			return list.Skip(min).Take(max - min + 1);
+		}
+
+		public Range Normallize(int maximumValue) {
+			var result = new Range(this);
+			result.NormallizeSelf(maximumValue);
+			return result;
+		}
+
+		public void NormallizeSelf(int maximumValue) {
+			if (maximumValue < 1) {
+				throw new ArgumentOutOfRangeException(nameof(maximumValue), "Cannot be less than 1.");
+			}
+
+			Min = Min ?? 0;
+			Max = Max ?? maximumValue - 1;
+
+			if (Max < 0) {
+				Min = maximumValue + Max;
+				Max = maximumValue - 1;
+			}
+			else if (Max > maximumValue) {
+				Max = maximumValue - 1;
+			}
+
+			if (Min < 0 || Max < 0 || Min > Max) {
+				throw new IndexOutOfRangeException($"Range invalid for given maximum! After normallizing to list length {maximumValue}, the range was [{Min}, {Max}]");
+			}
 		}
 
 		public override string ToString() {

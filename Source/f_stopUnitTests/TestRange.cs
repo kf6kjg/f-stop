@@ -369,6 +369,86 @@ namespace f_stopUnitTests {
 
 		#endregion
 
+		#region Normallize
+
+		[Test]
+		public void TestRange_Normallize_null_dash2_Correct() {
+			Assert.AreEqual(new Range(30, 31), new Range(null, -2).Normallize(32));
+		}
+
+		[Test]
+		public void TestRange_Normallize_2_null_Correct() {
+			Assert.AreEqual(new Range(2, 31), new Range(2, null).Normallize(32));
+		}
+
+		[Test]
+		public void TestRange_Normallize_2_10_Correct() {
+			Assert.AreEqual(new Range(2, 10), new Range(2, 10).Normallize(32));
+		}
+
+		[Test]
+		public void TestRange_Normallize_2_over_Correct() {
+			Assert.AreEqual(new Range(2, 31), new Range(2, 100).Normallize(32));
+		}
+
+		[Test]
+		public void TestRange_Normallize_null_dashover_IndexOutOfRangeException() {
+			var test = new Range(null, -100);
+			Assert.Throws<IndexOutOfRangeException>(() => test.Normallize(32));
+		}
+
+		[Test]
+		public void TestRange_Normallize_dash1_ArgumentOutOfRangeException() {
+			var test = new Range(0, null);
+			Assert.Throws<ArgumentOutOfRangeException>(() => test.Normallize(-1));
+		}
+
+		#endregion
+
+		#region NormallizeSelf
+
+		[Test]
+		public void TestRange_NormallizeSelf_null_dash2_Correct() {
+			var test = new Range(null, -2);
+			test.NormallizeSelf(32);
+			Assert.AreEqual(new Range(30, 31), test);
+		}
+
+		[Test]
+		public void TestRange_NormallizeSelf_2_null_Correct() {
+			var test = new Range(2, null);
+			test.NormallizeSelf(32);
+			Assert.AreEqual(new Range(2, 31), test);
+		}
+
+		[Test]
+		public void TestRange_NormallizeSelf_2_10_Correct() {
+			var test = new Range(2, 10);
+			test.NormallizeSelf(32);
+			Assert.AreEqual(new Range(2, 10), test);
+		}
+
+		[Test]
+		public void TestRange_NormallizeSelf_2_over_Correct() {
+			var test = new Range(2, 100);
+			test.NormallizeSelf(32);
+			Assert.AreEqual(new Range(2, 31), test);
+		}
+
+		[Test]
+		public void TestRange_NormallizeSelf_null_dashover_IndexOutOfRangeException() {
+			var test = new Range(null, -100);
+			Assert.Throws<IndexOutOfRangeException>(() => test.NormallizeSelf(32));
+		}
+
+		[Test]
+		public void TestRange_NormallizeSelf_dash1_ArgumentOutOfRangeException() {
+			var test = new Range(0, null);
+			Assert.Throws<ArgumentOutOfRangeException>(() => test.NormallizeSelf(-1));
+		}
+
+		#endregion
+
 		#region ToString
 
 		[Test]
