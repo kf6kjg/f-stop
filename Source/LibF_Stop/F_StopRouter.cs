@@ -151,6 +151,22 @@ namespace LibF_Stop {
 					return StockReply.BadRequest;
 				}
 
+				var rangeHeader = Request.Headers["Range"].FirstOrDefault();
+				IEnumerable<Range> ranges;
+
+				// parse and store the ranges.
+				try {
+					ranges = Range.ParseRanges(rangeHeader);
+				}
+				catch (FormatException) {
+					LOG.Warn($"Bad range header for asset from {Request.UserHostAddress}. Requested header doesn't match RFC7233: {rangeHeader}");
+					return StockReply.RangeError;
+				}
+				catch (ArgumentOutOfRangeException e) {
+					LOG.Warn($"Bad range header for asset from {Request.UserHostAddress}: {rangeHeader}", e);
+					return StockReply.RangeError;
+				}
+
 				var completionSource = new System.Threading.Tasks.TaskCompletionSource<Response>();
 
 				AssetRequest.AssetErrorHandler errorHandler = error => {
