@@ -164,6 +164,31 @@ namespace f_stopUnitTests {
 
 		#endregion
 
+		#region Copy Ctor
+
+		[Test]
+		public void TestRange_CtorCopy_Not_Same() {
+			var orig = new Range();
+			var copy = new Range(orig);
+			Assert.AreNotSame(orig, copy);
+		}
+
+		[Test]
+		public void TestRange_CtorCopy_null_null_Equal() {
+			var orig = new Range();
+			var copy = new Range(orig);
+			Assert.AreEqual(orig, copy);
+		}
+
+		[Test]
+		public void TestRange_CtorCopy_1_2_Equal() {
+			var orig = new Range(1, 2);
+			var copy = new Range(orig);
+			Assert.AreEqual(orig, copy);
+		}
+
+		#endregion
+
 		#region GetRange
 
 		[Test]

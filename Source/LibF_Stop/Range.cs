@@ -45,11 +45,11 @@ namespace LibF_Stop {
 			Max = max;
 
 			if (
-				(min == null && max >= 0)
+				(Min == null && Max >= 0)
 				||
-				(min < 0)
+				(Min < 0)
 				||
-				(min > max)
+				(Min > Max)
 			) {
 				throw new ArgumentOutOfRangeException(nameof(max), $"Min ({Min}) was greater than than max ({Max})");
 			}
@@ -79,6 +79,21 @@ namespace LibF_Stop {
 
 			Of course if B is large enough it could wrap past A given a short enough length, but we can't tell that until we actually have a length.
 			*/
+		}
+
+		public Range(Range other) {
+			Min = other.Min;
+			Max = other.Max;
+
+			if (
+				(Min == null && Max >= 0)
+				||
+				(Min < 0)
+				||
+				(Min > Max)
+			) {
+				throw new ArgumentOutOfRangeException(nameof(other), $"Min ({Min}) was greater than than max ({Max})");
+			}
 		}
 
 		public static IEnumerable<Range> ParseRanges(string range) {
