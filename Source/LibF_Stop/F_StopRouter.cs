@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Nancy;
 
@@ -151,7 +152,11 @@ namespace LibF_Stop {
 					return StockReply.BadRequest;
 				}
 
-				var rangeHeader = Request.Headers["Range"].FirstOrDefault();
+				var rangeHeaderVals = Request.Headers["Range"];
+				string rangeHeader = null;
+				if (rangeHeaderVals.Any()) {
+					rangeHeader = rangeHeaderVals.Aggregate((prev, next) => $"{prev},{next}"); // Because Nancy's being too smart.
+				}
 				IEnumerable<Range> ranges;
 
 				// parse and store the ranges.
