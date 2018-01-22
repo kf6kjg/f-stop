@@ -174,6 +174,11 @@ namespace LibF_Stop {
 					}
 				}
 
+				if ((ranges?.Count() ?? 0) > 5) { // 5 is arbitrary.  In reality ranges should be few, lots of ranges usually mean an attack.
+					LOG.Warn($"Too many ranges requested from {Request.UserHostAddress}: {rangeHeader}");
+					return StockReply.RangeError;
+				}
+
 				var completionSource = new System.Threading.Tasks.TaskCompletionSource<Response>();
 
 				AssetRequest.AssetErrorHandler errorHandler = error => {

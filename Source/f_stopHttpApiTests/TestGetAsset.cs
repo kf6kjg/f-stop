@@ -382,6 +382,21 @@ namespace f_stopHttpApiTests {
 			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
 		}
 
+		[Test]
+		public void TestGetAssetKnownTextureByteRange_excess_RequestedRangeNotSatisfiable() {
+			var client = new HttpClient();
+			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
+			var request = new HttpRequestMessage {
+				RequestUri = new Uri(Constants.SERVICE_URI, url),
+				Method = HttpMethod.Get,
+			};
+			client.DefaultRequestHeaders.TryAddWithoutValidation("Range", $"bytes=0-1,3-4,6-7,9-10,12-13,15-16");
+			var task = client.SendAsync(request);
+			task.Wait();
+			var response = task.Result;
+			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+		}
+
 		#endregion
 
 		#region Valid Ranges
