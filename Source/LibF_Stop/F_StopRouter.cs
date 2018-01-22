@@ -157,19 +157,21 @@ namespace LibF_Stop {
 				if (rangeHeaderVals.Any()) {
 					rangeHeader = rangeHeaderVals.Aggregate((prev, next) => $"{prev},{next}"); // Because Nancy's being too smart.
 				}
-				IEnumerable<Range> ranges;
+				IEnumerable<Range> ranges = null;
 
-				// parse and store the ranges.
-				try {
-					ranges = Range.ParseRanges(rangeHeader);
-				}
-				catch (FormatException) {
-					LOG.Warn($"Bad range header for asset from {Request.UserHostAddress}. Requested header doesn't match RFC7233: {rangeHeader}");
-					return StockReply.RangeError;
-				}
-				catch (ArgumentOutOfRangeException e) {
-					LOG.Warn($"Bad range header for asset from {Request.UserHostAddress}: {rangeHeader}", e);
-					return StockReply.RangeError;
+				// Parse and store the ranges, but only if a byte range. As per RFC7233: "An origin server MUST ignore a Range header field that contains a range unit it does not understand."
+				if (rangeHeader?.StartsWith("bytes=", StringComparison.Ordinal) ?? false) {
+					try {
+						ranges = Range.ParseRanges(rangeHeader);
+					}
+					catch (FormatException) {
+						LOG.Warn($"Bad range header for asset from {Request.UserHostAddress}. Requested header doesn't match RFC7233: {rangeHeader}");
+						return StockReply.RangeError;
+					}
+					catch (ArgumentOutOfRangeException e) {
+						LOG.Warn($"Bad range header for asset from {Request.UserHostAddress}: {rangeHeader}", e);
+						return StockReply.RangeError;
+					}
 				}
 
 				var completionSource = new System.Threading.Tasks.TaskCompletionSource<Response>();

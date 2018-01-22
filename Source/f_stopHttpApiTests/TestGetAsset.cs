@@ -323,7 +323,7 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public void TestGetAssetKnownTextureByteRangeWrongUnitType_asdf_RequestedRangeNotSatisfiable() {
+		public void TestGetAssetKnownTextureByteRangeWrongUnitType_asdf_Ok() { // As per RFC7233: "An origin server MUST ignore a Range header field that contains a range unit it does not understand."
 			var client = new HttpClient();
 			var url = $"/CAPS/HTT/{_capId.ToString("N")}?texture_id={_knownTextureTGAAsset.Id.ToString("N")}";
 			var request = new HttpRequestMessage {
@@ -334,7 +334,7 @@ namespace f_stopHttpApiTests {
 			var task = client.SendAsync(request);
 			task.Wait();
 			var response = task.Result;
-			Assert.AreEqual(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
