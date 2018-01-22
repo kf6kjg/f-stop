@@ -49,7 +49,9 @@ namespace LibF_Stop {
 			ConfigSingleton.ValidTypes = new System.Collections.Concurrent.ConcurrentBag<sbyte>(validTypes);
 
 			// See https://github.com/NancyFx/Nancy/wiki/Self-Hosting-Nancy#namespace-reservations
-			var hostConfigs = new HostConfiguration();
+			var hostConfigs = new HostConfiguration {
+				AllowChunkedEncoding = false,
+			};
 			hostConfigs.UrlReservations.CreateAutomatically = true;
 
 			_host = new NancyHost(hostConfigs, uri);
