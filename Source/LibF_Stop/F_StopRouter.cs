@@ -28,6 +28,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ChattelAssetTools;
+using InWorldz.Data.Assets.Stratus;
 using Nancy;
 
 namespace LibF_Stop {
@@ -210,50 +212,115 @@ namespace LibF_Stop {
 					}
 				};
 
-				if (textureId != null) {
-					_capAdmin.RequestTextureAssetOnCap(
-						(Guid)_.capId,
-						(Guid)textureId,
-						asset => {
-							var response = new Response();
-							var data = asset.Data;
+				try {
+					if (textureId != null) {
+						_capAdmin.RequestTextureAssetOnCap(
+							(Guid)_.capId,
+							(Guid)textureId,
+							asset => {
+								var response = new Response();
 
-							if (Encoding.ASCII.GetString(data, 0, Math.Min(data.Length, JPEG2000_MAGIC_NUMBERS.Length)).Equals(JPEG2000_MAGIC_NUMBERS, StringComparison.Ordinal)) {
-								response.ContentType = "image/x-j2c";
-							}
-							else if (Encoding.ASCII.GetString(data, 0, Math.Min(data.Length, JPEG_MAGIC_NUMBERS.Length)).Equals(JPEG_MAGIC_NUMBERS, StringComparison.Ordinal)) {
-								response.ContentType = "image/jpeg";
-							}
-							else {
-								response.ContentType = "image/x-tga";
-							}
-							response.Contents = stream => stream.Write(data, 0, data.Length);
+								PrepareResponse(response, asset, ranges);
 
-							completionSource.SetResult(response);
-						},
-						errorHandler
-					);
+								completionSource.SetResult(response);
+							},
+							errorHandler
+						);
+					}
+					else {
+						_capAdmin.RequestMeshAssetOnCap(
+							(Guid)_.capId,
+							(Guid)meshId,
+							asset => {
+								var response = new Response();
 
+								PrepareResponse(response, asset, ranges);
+
+								completionSource.SetResult(response);
+							},
+							errorHandler
+						);
+					}
 				}
-				else {
-					_capAdmin.RequestMeshAssetOnCap(
-						(Guid)_.capId,
-						(Guid)meshId,
-						asset => {
-							var response = new Response();
-							var data = asset.Data;
-
-							response.ContentType = "application/vnd.ll.mesh";
-							response.Contents = stream => stream.Write(data, 0, data.Length);
-
-							completionSource.SetResult(response);
-						},
-						errorHandler
-					);
+				catch (IndexOutOfRangeException e) {
+					LOG.Warn($"Bad range requested from {Request.UserHostAddress} for asset {textureId ?? meshId}: {rangeHeader}", e);
+					return StockReply.RangeError;
 				}
 
 				return await completionSource.Task;
 			};
+		}
+
+		private void PrepareResponse(Response response, StratusAsset asset, IEnumerable<Range> ranges) {
+			if (ranges != null) {
+				// Sorting the ranges breaks RFC7233 Section 4.1's "the server SHOULD send the parts in the same order" that it got them,
+				// but it also notes "a client cannot rely on receiving ... the same order that it requested."
+				// The spec also says "A client that is requesting multiple ranges SHOULD list those ranges in ascending order..."
+				// Thus I can sort how I deem fit, and I'm gonna.  Ask crazy byte orders expect a sane response or none at all.
+				ranges = Range.SortAndCoalesceRanges(ranges, asset.Data.Length);
+
+				if (ranges.Count() == 1) {
+					var range = ranges.First();
+					if (range.Min == 0 && range.Max == asset.Data.Length - 1) {
+						ranges = null; // Same as if there was no range header sent.
+					}
+				}
+			}
+
+			var contentType = GetContentType(asset);
+
+			if (ranges == null) { // Everything was requested, so send it all!
+				response.ContentType = contentType;
+				response.StatusCode = HttpStatusCode.OK;
+				response.Contents = stream => stream.Write(asset.Data, 0, asset.Data.Length);
+			}
+			else if (ranges.Count() == 1) { // Single part partial response
+				var range = ranges.First();
+
+				response.ContentType = contentType;
+				response.StatusCode = HttpStatusCode.PartialContent;
+				response.Headers.Add("Content-Range", $"bytes {range.Min}-{range.Max}/{asset.Data.Length}");
+				response.Contents = stream => stream.Write(asset.Data, (int)range.Min, (int)(range.Max - range.Min + 1));
+			}
+			else { // Multipart partial response
+				// Seperator is a GUID with some constant strings to make it easier to see by humans.
+				var boundary = $"####{Guid.NewGuid().ToString("N")}####";
+					
+				response.ContentType = $"multipart/byteranges; boundary={boundary}";
+				response.StatusCode = HttpStatusCode.PartialContent;
+
+				// AFAICT NancyFX doesn't have any built-in way to send multipart/byteranges.  I have to do this myself.
+
+				void writeString(Stream stream, string str, Encoding encoding) {
+					var bytes = encoding.GetBytes(str);
+					stream.Write(bytes, 0, bytes.Length);
+				}
+
+				response.Contents = stream => {
+					foreach (var range in ranges) {
+						writeString(stream, $"\n--{boundary}\nContent-Type: {contentType}\nContent-Range: bytes {range.Min}-{range.Max}/{asset.Data.Length}\n\n", Encoding.ASCII);
+						stream.Write(asset.Data, (int)range.Min, (int)(range.Max - range.Min + 1));
+					}
+				};
+
+			}
+		}
+
+		private string GetContentType(StratusAsset asset) {
+			if (asset.IsImageAsset()) {
+				if (Encoding.ASCII.GetString(asset.Data, 0, Math.Min(asset.Data.Length, JPEG2000_MAGIC_NUMBERS.Length)).Equals(JPEG2000_MAGIC_NUMBERS, StringComparison.Ordinal)) {
+					return "image/x-j2c";
+				}
+
+				if (Encoding.ASCII.GetString(asset.Data, 0, Math.Min(asset.Data.Length, JPEG_MAGIC_NUMBERS.Length)).Equals(JPEG_MAGIC_NUMBERS, StringComparison.Ordinal)) {
+					return "image/jpeg";
+				}
+
+				return "image/x-tga";
+			}
+
+			// else Mesh
+			return "application/vnd.ll.mesh";
 		}
 
 		private static class StockReply {
