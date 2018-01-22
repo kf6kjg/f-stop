@@ -283,9 +283,9 @@ namespace LibF_Stop {
 				response.Contents = stream => stream.Write(asset.Data, (int)range.Min, (int)(range.Max - range.Min + 1));
 			}
 			else { // Multipart partial response
-				// Seperator is a GUID with some constant strings to make it easier to see by humans.
-				var boundary = $"####{Guid.NewGuid().ToString("N")}####";
-					
+				// Separator is a GUID with some constant strings to make it easier to see by humans and less likely to collide with any values in the data.
+				var boundary = $"++++{Guid.NewGuid().ToString("N")}++++";
+
 				response.ContentType = $"multipart/byteranges; boundary={boundary}";
 				response.StatusCode = HttpStatusCode.PartialContent;
 
@@ -297,12 +297,13 @@ namespace LibF_Stop {
 				}
 
 				response.Contents = stream => {
+					writeString(stream, $"\r\n", Encoding.ASCII); // Because http://www.underealm.com/code/2015/08/rfc7233-is-wrong/
 					foreach (var range in ranges) {
-						writeString(stream, $"\n--{boundary}\nContent-Type: {contentType}\nContent-Range: bytes {range.Min}-{range.Max}/{asset.Data.Length}\n\n", Encoding.ASCII);
+						writeString(stream, $"\r\n--{boundary}\r\nContent-Type: {contentType}\r\nContent-Range: bytes {range.Min}-{range.Max}/{asset.Data.Length}\r\n\r\n", Encoding.ASCII);
 						stream.Write(asset.Data, (int)range.Min, (int)(range.Max - range.Min + 1));
 					}
+					writeString(stream, $"\r\n--{boundary}-- \r\n", Encoding.ASCII);
 				};
-
 			}
 		}
 

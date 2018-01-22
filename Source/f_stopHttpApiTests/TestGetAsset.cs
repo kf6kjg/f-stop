@@ -615,10 +615,44 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
+		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectMimeTypes() {
+			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+
+			var content = await response.Content.ReadAsMultipartAsync();
+			foreach (var section in content) {
+				var contentType = section.Headers.ContentType;
+				Assert.AreEqual("image/x-j2c", contentType.MediaType);
+			}
+		}
+
+		[Test]
+		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectContentRanges() {
+			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+
+			var content = await response.Content.ReadAsMultipartAsync();
+
+			Assert.AreEqual(2, content.Count());
+			var section1 = content.First();
+			var contentRange1 = section1.Headers.ContentRange;
+			Assert.AreEqual($"bytes 0-1/{_knownTextureAsset.Data.Length}", contentRange1.ToString());
+
+			var section2 = content.Skip(1).First();
+			var contentRange2 = section1.Headers.ContentRange;
+			Assert.AreEqual($"bytes 5-8/{_knownTextureAsset.Data.Length}", contentRange2.ToString());
+		}
+
+		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectData() {
 			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
-			// TODO: multipart range header and body tests...
-			Assert.AreEqual($@"", await response.Content.ReadAsStringAsync());
+
+			var content = await response.Content.ReadAsMultipartAsync();
+
+			Assert.AreEqual(2, content.Count());
+			var section1 = content.First();
+			Assert.AreEqual(_knownTextureAsset.Data.Take(2), await section1.ReadAsByteArrayAsync());
+
+			var section2 = content.Skip(1).First();
+			Assert.AreEqual(_knownTextureAsset.Data.Skip(4).Take(4), await section2.ReadAsByteArrayAsync());
 		}
 
 		[Test]
