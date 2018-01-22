@@ -458,9 +458,14 @@ namespace f_stopUnitTests {
 		}
 
 		[Test]
-		public void TestRange_Normallize_null_dashover_IndexOutOfRangeException() {
-			var test = new Range(null, -100);
+		public void TestRange_Normallize_over_over_IndexOutOfRangeException() {
+			var test = new Range(50, 100);
 			Assert.Throws<IndexOutOfRangeException>(() => test.Normallize(32));
+		}
+
+		[Test]
+		public void TestRange_Normallize_null_dashover_Correct() {
+			Assert.AreEqual(new Range(0, 31), new Range(null, -100).Normallize(32));
 		}
 
 		[Test]
@@ -502,9 +507,16 @@ namespace f_stopUnitTests {
 		}
 
 		[Test]
-		public void TestRange_NormallizeSelf_null_dashover_IndexOutOfRangeException() {
-			var test = new Range(null, -100);
+		public void TestRange_NormallizeSelf_over_over_IndexOutOfRangeException() {
+			var test = new Range(50, 100);
 			Assert.Throws<IndexOutOfRangeException>(() => test.NormallizeSelf(32));
+		}
+
+		[Test]
+		public void TestRange_NormallizeSelf_null_dashover_Correct() {
+			var test = new Range(null, -100);
+			test.NormallizeSelf(32);
+			Assert.AreEqual(new Range(0, 31), test);
 		}
 
 		[Test]

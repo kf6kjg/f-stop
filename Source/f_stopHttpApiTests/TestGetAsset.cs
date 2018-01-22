@@ -511,8 +511,6 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_dash9999_CorrectData() {
 			// Aperture limits to known byte range from asset.
-
-			// TODO: I'm not sure this one's right, should this be an error?
 			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
 			Assert.AreEqual(_knownTextureAsset.Data, await response.Content.ReadAsByteArrayAsync());
 		}

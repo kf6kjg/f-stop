@@ -161,7 +161,7 @@ namespace LibF_Stop {
 			var current = byMin.First();
 
 			foreach (var range in byMin.Skip(1)) { // O(n)
-				if (current.Max >= range.Min) {
+				if (current.Max >= range.Min) { // TODO: The RFC suggests coalescing if the requested ranges are "are separated by a gap that is smaller than the overhead of sending multiple parts"
 					// If the current range's max overlaps the new range's min, they can be coalesced.
 					current.Max = range.Max;
 				}
@@ -209,11 +209,15 @@ namespace LibF_Stop {
 				Min = maximumValue + Max;
 				Max = maximumValue - 1;
 			}
-			else if (Max > maximumValue) {
+			else if (Max >= maximumValue) { // Truncate to size rule.
 				Max = maximumValue - 1;
 			}
 
-			if (Min < 0 || Max < 0 || Min > Max) {
+			if (Min < 0) { // Truncate to size rule, just in the opposite direction.
+				Min = 0;
+			}
+
+			if (Min > Max) {
 				throw new IndexOutOfRangeException($"Range invalid for given maximum! After normallizing to list length {maximumValue}, the range was [{Min}, {Max}]");
 			}
 		}
