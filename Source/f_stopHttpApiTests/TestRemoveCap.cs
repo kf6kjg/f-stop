@@ -1,4 +1,4 @@
-﻿// Test.cs
+﻿// TestRemoveCap.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -29,6 +29,7 @@ using System;
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestRemoveCap {
+		// TODO: Tests for API cap remove
 		[Test]
 		public void TestCase() {
 		}

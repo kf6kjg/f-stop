@@ -1,4 +1,4 @@
-﻿// Test.cs
+﻿// TestLimitCap.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -29,6 +29,7 @@ using System;
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestLimitCap {
+		// TODO: Tests for API cap limit
 		[Test]
 		public void TestCase() {
 		}

@@ -1,4 +1,4 @@
-﻿// Test.cs
+﻿// TestResumeCap.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -29,6 +29,7 @@ using System;
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestResumeCap {
+		// TODO: Tests for API cap resume
 		[Test]
 		public void TestCase() {
 		}

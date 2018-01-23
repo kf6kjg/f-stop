@@ -1,4 +1,4 @@
-﻿// Test.cs
+﻿// TestPauseCap.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
@@ -29,6 +29,7 @@ using System;
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestPauseCap {
+		// TODO: Tests for API cap pause
 		[Test]
 		public void TestCase() {
 		}

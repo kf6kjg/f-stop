@@ -27,7 +27,7 @@ using System;
 using InWorldz.Data.Assets.Stratus;
 
 namespace LibF_Stop {
-	public class AssetRequest {
+	public class AssetRequest { // TODO: Build a unit test suite for the methods of Capability.
 		public delegate void AssetRequestHandler(StratusAsset asset);
 		public delegate void AssetErrorHandler(AssetError error);
 

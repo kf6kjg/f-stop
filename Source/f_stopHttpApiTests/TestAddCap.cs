@@ -1,4 +1,4 @@
-﻿// Test.cs
+﻿// TestAddCap.cs
 //
 // Author:
 //       Ricky Curtice <ricky@rwcproductions.com>
