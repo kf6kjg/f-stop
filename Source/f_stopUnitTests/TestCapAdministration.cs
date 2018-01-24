@@ -213,7 +213,18 @@ namespace f_stopUnitTests {
 			Assert.True(_capAdmin.PauseCap(ADMIN_TOKEN, capId));
 		}
 
-		// TODO: tests to verify that it was actually paused...
+		[Test]
+		public void TestCapAdminPauseCapRequestTimesOut() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+			_capAdmin.PauseCap(ADMIN_TOKEN, capId);
+			var gotAsset = false;
+			var gotError = false;
+
+			_capAdmin.RequestMeshAssetOnCap(capId, Guid.NewGuid(), asset => gotAsset = true, error => gotError = true);
+
+			Assert.That(() => gotAsset || gotError, Is.False.After(100).MilliSeconds);
+		}
 
 		#endregion
 
@@ -262,7 +273,19 @@ namespace f_stopUnitTests {
 			Assert.True(_capAdmin.ResumeCap(ADMIN_TOKEN, capId));
 		}
 
-		// TODO: tests to verify that it was actually resumed...
+		[Test]
+		public void TestCapAdminResumeCapRequestTimesOut() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+			_capAdmin.PauseCap(ADMIN_TOKEN, capId);
+			_capAdmin.ResumeCap(ADMIN_TOKEN, capId);
+			var gotAsset = false;
+			var gotError = false;
+
+			_capAdmin.RequestMeshAssetOnCap(capId, Guid.NewGuid(), asset => gotAsset = true, error => gotError = true);
+
+			Assert.That(() => gotAsset || gotError, Is.True.After(100).MilliSeconds);
+		}
 
 		#endregion
 
