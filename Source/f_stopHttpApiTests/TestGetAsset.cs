@@ -109,8 +109,19 @@ namespace f_stopHttpApiTests {
 			return path + ".pbasset";
 		}
 
+		[OneTimeTearDown]
+		public void CleanupCache() {
+			try {
+				Directory.Delete(Constants.TEST_CACHE_PATH, true);
+			}
+			catch (DirectoryNotFoundException) {
+			}
+		}
+
 		[OneTimeSetUp]
 		public void Setup() {
+			CleanupCache();
+
 			_capId = Guid.NewGuid();
 			TestAddCap.AddCap(_capId);
 
