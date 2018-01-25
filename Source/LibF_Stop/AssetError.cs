@@ -26,9 +26,17 @@
 using System;
 
 namespace LibF_Stop {
-	public struct AssetError {
+	public struct AssetError : IEquatable<AssetError> {
 		public AssetErrorType Error;
 		public string Message;
+
+		bool IEquatable<AssetError>.Equals(AssetError other) {
+			return Error == other.Error && Message == other.Message;
+		}
+
+		public override string ToString() {
+			return $"{Error}: {Message}";
+		}
 	}
 
 	public enum AssetErrorType {
