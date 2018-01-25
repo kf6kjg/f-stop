@@ -101,6 +101,9 @@ namespace LibF_Stop {
 		}
 
 		public void RequestTextureAssetOnCap(Guid capId, Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
+			handler = handler ?? throw new ArgumentNullException(nameof(handler));
+			errHandler = errHandler ?? throw new ArgumentNullException(nameof(errHandler));
+
 			if (_caps.TryGetValue(capId, out Capability cap)) {
 				cap.RequestAsset(
 					assetId,
@@ -131,6 +134,9 @@ namespace LibF_Stop {
 		}
 
 		public void RequestMeshAssetOnCap(Guid capId, Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
+			handler = handler ?? throw new ArgumentNullException(nameof(handler));
+			errHandler = errHandler ?? throw new ArgumentNullException(nameof(errHandler));
+
 			if (_caps.TryGetValue(capId, out Capability cap)) {
 				cap.RequestAsset(
 					assetId,

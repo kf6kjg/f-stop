@@ -158,7 +158,7 @@ namespace f_stopHttpApiTests {
 			_knownMeshAsset = CreateAndCacheAsset(
 				"_knownMeshAsset",
 				49,
-				new byte[] { 0xfa }, // TODO: find out what this one's is if any.
+				new byte[] { 0xfa }, // TODO: find out what mesh's header is if any.
 				Guid.Parse("05000000-0000-0000-0000-000000000000")
 			);
 

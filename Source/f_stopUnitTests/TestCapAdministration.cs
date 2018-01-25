@@ -25,6 +25,8 @@
 
 using NUnit.Framework;
 using System;
+using InWorldz.Data.Assets.Stratus;
+using LibF_Stop;
 
 namespace f_stopUnitTests {
 	[TestFixture]
@@ -32,11 +34,40 @@ namespace f_stopUnitTests {
 		private const string ADMIN_TOKEN = "test";
 
 		private LibF_Stop.CapAdministration _capAdmin;
+		private StratusAsset _knownMeshAsset;
+		private StratusAsset _knownTextureAsset;
 
 		[OneTimeSetUp]
 		public void Setup() {
+			TestCapability.CleanupCache();
+			TestCapability.SetupCacheAndChattel();
+
+			ConfigSingleton.ValidTypes.Add(49);
+
+			// Using hardcoded GUIDs to make debugging easier.
+
+			_knownMeshAsset = TestCapability.CreateAndCacheAsset(
+				"_knownMeshAsset",
+				49,
+				new byte[] { 0xfa }, // TODO: find out what mesh's header is if any.
+				Guid.Parse("05000000-0000-0000-0000-000000000000")
+			);
+
+			_knownTextureAsset = TestCapability.CreateAndCacheAsset(
+				"_knownTextureAsset",
+				0,
+				new byte[] { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A }, // JPEG-2000 magic numbers
+				Guid.Parse("01000000-0000-0000-0000-000000000000")
+			);
+
+
 			LibF_Stop.ConfigSingleton.AdminToken = ADMIN_TOKEN;
 			_capAdmin = new LibF_Stop.CapAdministration();
+		}
+
+		[OneTimeTearDown]
+		public void Cleanup() {
+			TestCapability.CleanupCache();
 		}
 
 		#region AddCap
@@ -359,6 +390,318 @@ namespace f_stopUnitTests {
 		}
 
 		// TODO: tests to verify that the limit was actually changed...
+
+		#endregion
+
+		#region RequestMeshAssetOnCap
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_nullFailureHandler_ArgumentNullException() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			Assert.Throws<ArgumentNullException>(() => _capAdmin.RequestMeshAssetOnCap(capId, _knownMeshAsset.Id, a => { }, null));
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_nullSuccessHandler_ArgumentNullException() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			Assert.Throws<ArgumentNullException>(() => _capAdmin.RequestMeshAssetOnCap(capId, _knownMeshAsset.Id, null, a => { }));
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badAssetId_CallsErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(capId, Guid.NewGuid(), a => { }, a => gotCallback = true);
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badAssetId_DoesntCallSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(capId, Guid.NewGuid(), a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badAssetId_AssetTypeWrong() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errorType = AssetErrorType.AssetTypeWrong;
+			_capAdmin.RequestMeshAssetOnCap(capId, Guid.NewGuid(), a => { }, a => errorType = a.Error);
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.AssetIdUnknown).After(100).MilliSeconds);
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badAssetType_CallsErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(capId, _knownTextureAsset.Id, a => { }, a => gotCallback = true);
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badAssetType_DoesntCallSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(capId, _knownTextureAsset.Id, a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badAssetType_AssetTypeWrong() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errorType = AssetErrorType.AssetIdUnknown;
+			_capAdmin.RequestMeshAssetOnCap(capId, _knownTextureAsset.Id, a => { }, a => errorType = a.Error);
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.AssetTypeWrong).After(100).MilliSeconds);
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badCap_CallsErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(Guid.NewGuid(), _knownMeshAsset.Id, a => { }, a => gotCallback = true);
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badCap_DoesntCallSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(Guid.NewGuid(), _knownMeshAsset.Id, a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_badCap_CapabilityIdUnknown() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errorType = AssetErrorType.AssetIdUnknown;
+			_capAdmin.RequestMeshAssetOnCap(Guid.NewGuid(), _knownMeshAsset.Id, a => { }, a => errorType = a.Error);
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.CapabilityIdUnknown).After(100).MilliSeconds);
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_good_CallsSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestMeshAssetOnCap(capId, _knownMeshAsset.Id, a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_good_DoesntCallErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errMessage = new AssetError();
+			_capAdmin.RequestMeshAssetOnCap(capId, _knownMeshAsset.Id, a => { }, a => errMessage = a);
+
+			Assert.That(() => errMessage, Is.EqualTo(new AssetError()).After(100).MilliSeconds, $"Got error:\n\n{errMessage}");
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestMeshAssetOnCap_good_CorrectAsset() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			StratusAsset asset = null;
+			_capAdmin.RequestMeshAssetOnCap(capId, _knownMeshAsset.Id, a => asset = a, a => { });
+
+			Assert.That(() => asset, Is.EqualTo(_knownMeshAsset).After(200).MilliSeconds);
+		}
+
+		#endregion
+
+		#region RequestTextureAssetOnCap
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_nullFailureHandler_ArgumentNullException() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			Assert.Throws<ArgumentNullException>(() => _capAdmin.RequestTextureAssetOnCap(capId, _knownTextureAsset.Id, a => { }, null));
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_nullSuccessHandler_ArgumentNullException() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			Assert.Throws<ArgumentNullException>(() => _capAdmin.RequestTextureAssetOnCap(capId, _knownTextureAsset.Id, null, a => { }));
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badAssetId_CallsErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(capId, Guid.NewGuid(), a => { }, a => gotCallback = true);
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badAssetId_DoesntCallSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(capId, Guid.NewGuid(), a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badAssetId_AssetTypeWrong() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errorType = AssetErrorType.AssetTypeWrong;
+			_capAdmin.RequestTextureAssetOnCap(capId, Guid.NewGuid(), a => { }, a => errorType = a.Error);
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.AssetIdUnknown).After(100).MilliSeconds);
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badAssetType_CallsErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(capId, _knownMeshAsset.Id, a => { }, a => gotCallback = true);
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badAssetType_DoesntCallSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(capId, _knownMeshAsset.Id, a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badAssetType_AssetTypeWrong() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errorType = AssetErrorType.AssetIdUnknown;
+			_capAdmin.RequestTextureAssetOnCap(capId, _knownMeshAsset.Id, a => { }, a => errorType = a.Error);
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.AssetTypeWrong).After(100).MilliSeconds);
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badCap_CallsErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(Guid.NewGuid(), _knownTextureAsset.Id, a => { }, a => gotCallback = true);
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badCap_DoesntCallSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(Guid.NewGuid(), _knownTextureAsset.Id, a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_badCap_CapabilityIdUnknown() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errorType = AssetErrorType.AssetIdUnknown;
+			_capAdmin.RequestTextureAssetOnCap(Guid.NewGuid(), _knownTextureAsset.Id, a => { }, a => errorType = a.Error);
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.CapabilityIdUnknown).After(100).MilliSeconds);
+		}
+
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_good_CallsSuccessHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var gotCallback = false;
+			_capAdmin.RequestTextureAssetOnCap(capId, _knownTextureAsset.Id, a => gotCallback = true, a => { });
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_good_DoesntCallErrHandler() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			var errMessage = new AssetError();
+			_capAdmin.RequestTextureAssetOnCap(capId, _knownTextureAsset.Id, a => { }, a => errMessage = a);
+
+			Assert.That(() => errMessage, Is.EqualTo(new AssetError()).After(100).MilliSeconds, $"Got error:\n\n{errMessage}");
+		}
+
+		[Test]
+		public void TestCapAdmin_RequestTextureAssetOnCap_good_CorrectAsset() {
+			var capId = Guid.NewGuid();
+			_capAdmin.AddCap(ADMIN_TOKEN, capId);
+
+			StratusAsset asset = null;
+			_capAdmin.RequestTextureAssetOnCap(capId, _knownTextureAsset.Id, a => asset = a, a => { });
+
+			Assert.That(() => asset, Is.EqualTo(_knownTextureAsset).After(200).MilliSeconds);
+		}
 
 		#endregion
 	}
