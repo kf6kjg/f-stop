@@ -23,11 +23,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using NUnit.Framework;
 using System;
-using LibF_Stop;
 using System.Collections.Generic;
 using System.Linq;
+using LibF_Stop;
+using NUnit.Framework;
 
 namespace f_stopUnitTests {
 	[TestFixture]
