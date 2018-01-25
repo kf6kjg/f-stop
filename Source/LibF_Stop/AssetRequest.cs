@@ -27,7 +27,7 @@ using System;
 using InWorldz.Data.Assets.Stratus;
 
 namespace LibF_Stop {
-	public class AssetRequest { // TODO: Build a unit test suite for the methods of Capability.
+	public class AssetRequest {
 		public delegate void AssetRequestHandler(StratusAsset asset);
 		public delegate void AssetErrorHandler(AssetError error);
 
@@ -38,20 +38,18 @@ namespace LibF_Stop {
 
 		public AssetRequest(Guid assetId, AssetRequestHandler handler, AssetErrorHandler errHandler) {
 			AssetId = assetId;
-			_handler = handler;
-			_errHandler = errHandler;
+			_handler = handler ?? throw new ArgumentNullException(nameof(handler));
+			_errHandler = errHandler ?? throw new ArgumentNullException(nameof(errHandler));
 		}
 
 		public void Respond(StratusAsset asset) {
-			if (asset == null) {
-				throw new ArgumentNullException(nameof(asset));
-			}
+			asset = asset ?? throw new ArgumentNullException(nameof(asset));
 
 			if (asset.Id != AssetId) {
 				throw new AssetIdMismatchException($"Expecting {AssetId}, but got asset with ID {asset.Id}");
 			}
 
-			if (_handler != null) {
+			if (_handler == null) {
 				throw new AssetAlreadySetException($"Cannot call {nameof(Respond)} twice!");
 			}
 
@@ -62,7 +60,7 @@ namespace LibF_Stop {
 		}
 
 		public void Respond(AssetError err) {
-			if (_handler != null) {
+			if (_handler == null) {
 				throw new AssetAlreadySetException($"Cannot call {nameof(Respond)} twice!");
 			}
 
