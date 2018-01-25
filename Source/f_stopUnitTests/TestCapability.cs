@@ -71,8 +71,19 @@ namespace f_stopUnitTests {
 			return path + ".pbasset";
 		}
 
-		//[OneTimeTearDown]
-		public void CleanupCache() {
+		public static void SetupCacheAndChattel() {
+			Directory.CreateDirectory(Constants.TEST_CACHE_PATH);
+
+			ConfigSingleton.ChattelReader = new Chattel.ChattelReader(
+				new Chattel.ChattelConfiguration(Constants.TEST_CACHE_PATH, Constants.TEST_WRITE_CACHE_PATH)
+			);
+			ConfigSingleton.NegativeCacheItemLifetime = Constants.SERVICE_NC_LIFETIME;
+			ConfigSingleton.ValidTypes = new System.Collections.Concurrent.ConcurrentBag<sbyte> {
+				0
+			};
+		}
+
+		public static void CleanupCache() {
 			try {
 				Directory.Delete(Constants.TEST_CACHE_PATH, true);
 			}
@@ -88,16 +99,7 @@ namespace f_stopUnitTests {
 		[OneTimeSetUp]
 		public void Setup() {
 			CleanupCache();
-
-			Directory.CreateDirectory(Constants.TEST_CACHE_PATH);
-
-			ConfigSingleton.ChattelReader = new Chattel.ChattelReader(
-				new Chattel.ChattelConfiguration(Constants.TEST_CACHE_PATH, Constants.TEST_WRITE_CACHE_PATH)
-			);
-			ConfigSingleton.NegativeCacheItemLifetime = Constants.SERVICE_NC_LIFETIME;
-			ConfigSingleton.ValidTypes = new System.Collections.Concurrent.ConcurrentBag<sbyte> {
-				0
-			};
+			SetupCacheAndChattel();
 
 			// Using hardcoded GUIDs to make debugging easier.
 
@@ -107,6 +109,11 @@ namespace f_stopUnitTests {
 				new byte[] { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A }, // JPEG-2000 magic numbers
 				Guid.Parse("01000000-0000-0000-0000-000000000000")
 			);
+		}
+
+		[OneTimeTearDown]
+		public void Cleanup() {
+			CleanupCache();
 		}
 
 		#region Pause Resume
