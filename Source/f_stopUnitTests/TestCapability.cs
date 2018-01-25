@@ -228,6 +228,45 @@ namespace f_stopUnitTests {
 			Assert.That(() => gotCallback, Is.False.After(200).MilliSeconds);
 		}
 
+		[Test]
+		public void TestCapability_RequestAsset_PausedQueueOverload_FailureHandlerCalled() {
+			var cap = new Capability();
+			cap.Pause();
+
+			var gotCallback = false;
+			for (var i = 0; i < Capability.MAX_QUEUED_REQUESTS + 1; ++i) {
+				cap.RequestAsset(Guid.NewGuid(), asset => { }, error => gotCallback = true);
+			}
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapability_RequestAsset_PausedQueueOverload_FailureHandler_QueueFilled() {
+			var cap = new Capability();
+			cap.Pause();
+
+			var errorType = AssetErrorType.AssetIdUnknown;
+			for (var i = 0; i < Capability.MAX_QUEUED_REQUESTS + 1; ++i) {
+				cap.RequestAsset(Guid.NewGuid(), asset => { }, error => errorType = error.Error);
+			}
+
+			Assert.That(() => errorType, Is.EqualTo(AssetErrorType.QueueFilled).After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapability_RequestAsset_PausedQueueOverload_SuccessHandlerNotCalled() {
+			var cap = new Capability();
+			cap.Pause();
+
+			var gotCallback = false;
+			for (var i = 0; i < Capability.MAX_QUEUED_REQUESTS + 1; ++i) {
+				cap.RequestAsset(Guid.NewGuid(), asset => gotCallback = true, error => { });
+			}
+
+			Assert.That(() => gotCallback, Is.False.After(100).MilliSeconds);
+		}
+
 		#endregion
 
 		// TODO: Test bandwidth stuff once figured out.
