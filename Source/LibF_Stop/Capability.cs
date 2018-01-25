@@ -30,7 +30,7 @@ using System.Linq;
 using System.Threading;
 
 namespace LibF_Stop {
-	internal class Capability { // TODO: Build a unit test suite for the methods of Capability.
+	internal class Capability {
 		public const uint MAX_QUEUED_REQUESTS = 50;
 
 		public bool IsActive { get; protected set; } = true;

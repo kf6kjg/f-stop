@@ -64,6 +64,8 @@
   <ItemGroup>
     <Compile Include="TestCapAdministration.cs" />
     <Compile Include="TestRange.cs" />
+    <Compile Include="TestCapability.cs" />
+    <Compile Include="Constants.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
