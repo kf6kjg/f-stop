@@ -138,7 +138,19 @@ namespace f_stopUnitTests {
 		}
 
 		[Test]
-		public void TestCapability_PurgeAndKill_FulfilledRequest() {
+		public void TestCapability_PurgeAndKill_FulfilledKnownIdRequest() {
+			var cap = new Capability();
+			var gotCallback = false;
+			cap.Pause();
+			cap.RequestAsset(_knownTextureAsset.Id, asset => gotCallback = true, error => gotCallback = true);
+
+			cap.PurgeAndKill();
+
+			Assert.That(() => gotCallback, Is.True.After(100).MilliSeconds);
+		}
+
+		[Test]
+		public void TestCapability_PurgeAndKill_FulfilledUnknownIdRequest() {
 			var cap = new Capability();
 			var gotCallback = false;
 			cap.Pause();

@@ -28,6 +28,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LibF_Stop {
 	internal class Capability {
@@ -91,6 +92,38 @@ namespace LibF_Stop {
 			}
 
 			// Not paused, query Chattel.
+			HandleRequest(assetId, handler, errHandler);
+		}
+
+		public void Pause() {
+			IsActive = false;
+		}
+
+		public void PurgeAndKill() {
+			lock (_requests) { // Lock to prevent the addition of more requests to this cap, and to wait on any being added.
+				IsActive = false;
+				PurgeQueue();
+			}
+		}
+
+		public void Resume() {
+			PurgeQueue();
+			IsActive = true;
+		}
+
+
+		private void PurgeQueue() {
+			// Fullfil all the queued asset requests
+			var options = new ParallelOptions {
+				MaxDegreeOfParallelism = 1, // Just another hipshot number. May want to be configurable at some point.
+			};
+			//Parallel.ForEach(_requests, options, assetRequest => HandleRequest(assetRequest.AssetId, assetRequest.Respond, assetRequest.Respond));
+			foreach (var assetRequest in _requests) {
+				HandleRequest(assetRequest.AssetId, assetRequest.Respond, assetRequest.Respond);
+			}
+		}
+
+		private void HandleRequest(Guid assetId, AssetRequest.AssetRequestHandler handler, AssetRequest.AssetErrorHandler errHandler) {
 			var reader = ConfigSingleton.ChattelReader;
 			if (reader == null) {
 				// There's no Chattel. Fail.
@@ -119,27 +152,6 @@ namespace LibF_Stop {
 
 				handler(asset);
 			});
-		}
-
-		public void Pause() {
-			IsActive = false;
-		}
-
-		public void PurgeAndKill() {
-			lock (_requests) { // Lock to prevent the addition of more requests to this cap, and to wait on any being added.
-				IsActive = false;
-				PurgeQueue();
-			}
-		}
-
-		public void Resume() {
-			PurgeQueue();
-			IsActive = true;
-		}
-
-
-		private void PurgeQueue() {
-			// TODO fullfil all the queued asset requests
 		}
 	}
 }
