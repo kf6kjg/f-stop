@@ -33,7 +33,7 @@ namespace f_stopUnitTests {
 	public class TestCapAdministration {
 		private const string ADMIN_TOKEN = "test";
 
-		private LibF_Stop.CapAdministration _capAdmin;
+		private CapAdministration _capAdmin;
 		private StratusAsset _knownMeshAsset;
 		private StratusAsset _knownTextureAsset;
 
@@ -61,8 +61,8 @@ namespace f_stopUnitTests {
 			);
 
 
-			LibF_Stop.ConfigSingleton.AdminToken = ADMIN_TOKEN;
-			_capAdmin = new LibF_Stop.CapAdministration();
+			ConfigSingleton.AdminToken = ADMIN_TOKEN;
+			_capAdmin = new CapAdministration();
 		}
 
 		[OneTimeTearDown]
@@ -89,7 +89,7 @@ namespace f_stopUnitTests {
 
 		[Test]
 		public void TestCapAdminAddCapLimitedWrongTokenThrowsInvalidAdminTokenException() {
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", Guid.NewGuid(), 100000));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", Guid.NewGuid(), 100000));
 		}
 
 
@@ -105,7 +105,7 @@ namespace f_stopUnitTests {
 
 		[Test]
 		public void TestCapAdminAddCapUnlimitedWrongTokenThrowsInvalidAdminTokenException() {
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", Guid.NewGuid()));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", Guid.NewGuid()));
 		}
 
 
@@ -127,7 +127,7 @@ namespace f_stopUnitTests {
 		public void TestCapAdminAddCapLimitedDuplicateWrongTokenThrowsInvalidAdminTokenException() {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId, 100000);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", capId, 100000));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", capId, 100000));
 		}
 
 
@@ -149,7 +149,7 @@ namespace f_stopUnitTests {
 		public void TestCapAdminAddCapUnlimitedDuplicateWrongTokenThrowsInvalidAdminTokenException() {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", capId));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", capId));
 		}
 
 		#endregion
@@ -174,7 +174,7 @@ namespace f_stopUnitTests {
 		public void TestCapAdminRemoveCapWrongTokenThrowsInvalidAdminTokenException() {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.RemoveCap("asdf", capId));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.RemoveCap("asdf", capId));
 		}
 
 
@@ -199,7 +199,7 @@ namespace f_stopUnitTests {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId);
 			_capAdmin.RemoveCap(ADMIN_TOKEN, capId);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", capId));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.AddCap("asdf", capId));
 		}
 
 		#endregion
@@ -224,7 +224,7 @@ namespace f_stopUnitTests {
 		public void TestCapAdminPauseCapWrongTokenThrowsInvalidAdminTokenException() {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.PauseCap("asdf", capId));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.PauseCap("asdf", capId));
 		}
 
 
@@ -282,7 +282,7 @@ namespace f_stopUnitTests {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId);
 			_capAdmin.PauseCap(ADMIN_TOKEN, capId);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.ResumeCap("asdf", capId));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.ResumeCap("asdf", capId));
 		}
 
 
@@ -386,7 +386,7 @@ namespace f_stopUnitTests {
 		public void TestCapAdminLimitCapWrongTokenThrowsInvalidAdminTokenException() {
 			var capId = Guid.NewGuid();
 			_capAdmin.AddCap(ADMIN_TOKEN, capId);
-			Assert.Throws<LibF_Stop.InvalidAdminTokenException>(() => _capAdmin.LimitCap("asdf", capId));
+			Assert.Throws<InvalidAdminTokenException>(() => _capAdmin.LimitCap("asdf", capId));
 		}
 
 		// TODO: tests to verify that the limit was actually changed...
