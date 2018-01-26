@@ -36,6 +36,7 @@ namespace LibF_Stop {
 	public sealed class F_StopRouter : NancyModule {
 		private static readonly log4net.ILog LOG = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		// Why static for the cap admin? because this router class is instanced automatically to handle requests.
 		private static CapAdministration _capAdmin = new CapAdministration();
 
 		private static readonly string JPEG2000_MAGIC_NUMBERS = Encoding.ASCII.GetString(new byte[] { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A });
