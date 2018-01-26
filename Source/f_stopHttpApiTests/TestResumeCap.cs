@@ -123,6 +123,20 @@ namespace f_stopHttpApiTests {
 			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 
-		// TODO: figure out how to initiate a request while paused and then resume and get the result.
+		[Test]
+		public void TestResumeCapContinuesResponse() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			TestPauseCap.PauseCap(capId);
+
+			var getStatus = HttpStatusCode.Unused;
+
+			TestGetAsset.GetAsset(capId, _knownTextureAsset.Id, getResponse => getStatus = getResponse.StatusCode);
+			Assert.AreEqual(HttpStatusCode.Unused, getStatus);
+
+			ResumeCap(capId);
+
+			Assert.That(() => getStatus, Is.EqualTo(HttpStatusCode.OK).After(200).MilliSeconds);
+		}
 	}
 }

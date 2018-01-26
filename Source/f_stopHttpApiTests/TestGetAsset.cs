@@ -46,6 +46,8 @@ namespace f_stopHttpApiTests {
 		private StratusAsset _knownMeshAsset;
 		private StratusAsset _knownNotecardAsset;
 
+		public delegate void GetResponse(HttpWebResponse response);
+
 		public static void ForceHeader(HttpWebRequest request, string name, string value) {
 			request.Headers.GetType().InvokeMember( // Use Reflection to force the header through, bypassing all of MS's sillyness about blocking invalid ranges.
 				"ChangeInternal",
@@ -75,6 +77,29 @@ namespace f_stopHttpApiTests {
 			}
 
 			return request.GetResponse() as HttpWebResponse;
+		}
+
+		public static void GetAsset(Guid capId, Guid assetId, GetResponse callback, string type = "texture_id", IEnumerable<Range> ranges = null, TimeSpan? timeout = null) {
+			var url = $"{Constants.SERVICE_URI}/CAPS/HTT/{capId.ToString("N")}?{type}={assetId.ToString("N")}";
+			var request = WebRequest.Create(new Uri(Constants.SERVICE_URI, url)) as HttpWebRequest;
+			request.Method = "GET";
+			if (ranges != null) {
+				// Aperture only supports single range, but this supports much more.
+				var rangesFormatted = ranges
+					.Select(range => range.ToString())
+					.Where(range => range != null)
+					.Aggregate((aggregate, newRange) => $"{aggregate},{newRange}")
+				;
+				ForceHeader(request, "Range", $"bytes={rangesFormatted}");
+			}
+
+			if (timeout != null) {
+				request.Timeout = (int)timeout?.TotalMilliseconds;
+			}
+
+			var asyncResponse = request.BeginGetResponse(ar => {
+				callback(request.EndGetResponse(ar) as HttpWebResponse);
+			}, null);
 		}
 
 		public static StratusAsset CreateAndCacheAsset(string name, sbyte type, byte[] data, Guid? id = null) {
