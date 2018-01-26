@@ -56,7 +56,7 @@ namespace f_stopHttpApiTests {
 			);
 		}
 
-		public static HttpWebResponse GetAsset(Guid capId, Guid assetId, string type = "texture_id", IEnumerable<Range> ranges = null) {
+		public static HttpWebResponse GetAsset(Guid capId, Guid assetId, string type = "texture_id", IEnumerable<Range> ranges = null, TimeSpan? timeout = null) {
 			var url = $"{Constants.SERVICE_URI}/CAPS/HTT/{capId.ToString("N")}?{type}={assetId.ToString("N")}";
 			var request = WebRequest.Create(new Uri(Constants.SERVICE_URI, url)) as HttpWebRequest;
 			request.Method = "GET";
@@ -69,6 +69,11 @@ namespace f_stopHttpApiTests {
 				;
 				ForceHeader(request, "Range", $"bytes={rangesFormatted}");
 			}
+
+			if (timeout != null) {
+				request.Timeout = (int)timeout?.TotalMilliseconds;
+			}
+
 			return request.GetResponse() as HttpWebResponse;
 		}
 

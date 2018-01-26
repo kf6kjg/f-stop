@@ -39,9 +39,20 @@ namespace f_stopHttpApiTests {
 			return response;
 		}
 
-		// Can't find a working sane way to test that a call that never returns, goes off into an loop or whatever, takes at least X milliseconds and aborts the call when it does.
-		// Need that to test if pause actually pauses the call.
-		// Had to resort to manual testing.
+		[Test]
+		public void TestPauseCapBlocksGetAsset() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			PauseCap(capId);
+
+			try {
+				var response = TestGetAsset.GetAsset(capId, Guid.NewGuid(), timeout: TimeSpan.FromMilliseconds(200));
+				Assert.Fail();
+			}
+			catch (WebException e) {
+				Assert.AreEqual(WebExceptionStatus.Timeout, e.Status); // It timed out
+			}
+		}
 
 		[Test]
 		public void TestPauseCapBadAdminTokenBadRequest() {
@@ -52,17 +63,17 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
+		public void TestPauseCapUnknownCapBadRequest() {
+			var response = PauseCap(Guid.NewGuid());
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
 		public void TestPauseCapOk() {
 			var capId = Guid.NewGuid();
 			TestAddCap.AddCap(capId);
 			var response = PauseCap(capId);
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
-		}
-
-		[Test]
-		public void TestPauseCapUnknownCapBadRequest() {
-			var response = PauseCap(Guid.NewGuid());
-			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 	}
 }
