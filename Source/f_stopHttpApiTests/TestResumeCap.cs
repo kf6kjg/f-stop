@@ -108,9 +108,21 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
+		public void TestResumeCapPausedTwiceOk() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			TestPauseCap.PauseCap(capId);
+			ResumeCap(capId);
+			var response = ResumeCap(capId);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
 		public void TestResumeCapUnknownCapBadRequest() {
 			var response = ResumeCap(Guid.NewGuid());
 			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
+
+		// TODO: figure out how to initiate a request while paused and then resume and get the result.
 	}
 }

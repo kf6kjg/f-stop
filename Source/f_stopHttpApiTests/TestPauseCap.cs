@@ -75,5 +75,14 @@ namespace f_stopHttpApiTests {
 			var response = PauseCap(capId);
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
+
+		[Test]
+		public void TestPauseCapTwiceOk() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			PauseCap(capId);
+			var response = PauseCap(capId);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
 	}
 }
