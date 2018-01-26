@@ -56,7 +56,7 @@ namespace f_stopHttpApiTests {
 			);
 		}
 
-		public static async Task<HttpWebResponse> GetAssetAsync(Guid capId, Guid assetId, string type = "texture_id", IEnumerable<Range> ranges = null) {
+		public static HttpWebResponse GetAsset(Guid capId, Guid assetId, string type = "texture_id", IEnumerable<Range> ranges = null) {
 			var url = $"{Constants.SERVICE_URI}/CAPS/HTT/{capId.ToString("N")}?{type}={assetId.ToString("N")}";
 			var request = WebRequest.Create(new Uri(Constants.SERVICE_URI, url)) as HttpWebRequest;
 			request.Method = "GET";
@@ -69,7 +69,7 @@ namespace f_stopHttpApiTests {
 				;
 				ForceHeader(request, "Range", $"bytes={rangesFormatted}");
 			}
-			return await request.GetResponseAsync() as HttpWebResponse;
+			return request.GetResponse() as HttpWebResponse;
 		}
 
 		public static StratusAsset CreateAndCacheAsset(string name, sbyte type, byte[] data, Guid? id = null) {
@@ -201,9 +201,9 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownImageJPEGBadRequest() {
+		public void TestGetAssetKnownImageJPEGBadRequest() {
 			try {
-				var response = await GetAssetAsync(_capId, _knownImageJPEGAsset.Id);
+				var response = GetAsset(_capId, _knownImageJPEGAsset.Id);
 				Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
 			}
 			catch (WebException e) {
@@ -212,9 +212,9 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownImageTGABadRequest() {
+		public void TestGetAssetKnownImageTGABadRequest() {
 			try {
-				var response = await GetAssetAsync(_capId, _knownImageTGAAsset.Id);
+				var response = GetAsset(_capId, _knownImageTGAAsset.Id);
 				Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
 			}
 			catch (WebException e) {
@@ -223,52 +223,52 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownMeshContentType() {
-			var response = await GetAssetAsync(_capId, _knownMeshAsset.Id, "mesh_id");
+		public void TestGetAssetKnownMeshContentType() {
+			var response = GetAsset(_capId, _knownMeshAsset.Id, "mesh_id");
 			Assert.AreEqual("application/vnd.ll.mesh", response.ContentType);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownMeshOk() {
-			var response = await GetAssetAsync(_capId, _knownMeshAsset.Id, "mesh_id");
+		public void TestGetAssetKnownMeshOk() {
+			var response = GetAsset(_capId, _knownMeshAsset.Id, "mesh_id");
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureContentType() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id);
+		public void TestGetAssetKnownTextureContentType() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id);
 			Assert.AreEqual("image/x-j2c", response.ContentType);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureOk() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id);
+		public void TestGetAssetKnownTextureOk() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id);
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureSame() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id);
+			var response = GetAsset(_capId, _knownTextureAsset.Id);
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.That(assetData.SequenceEqual(_knownTextureAsset.Data));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureTGAContentType() {
-			var response = await GetAssetAsync(_capId, _knownTextureTGAAsset.Id);
+		public void TestGetAssetKnownTextureTGAContentType() {
+			var response = GetAsset(_capId, _knownTextureTGAAsset.Id);
 			Assert.AreEqual("image/x-tga", response.ContentType); // That MIME type is an extension to the official spec.
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureTGAOk() {
-			var response = await GetAssetAsync(_capId, _knownTextureTGAAsset.Id);
+		public void TestGetAssetKnownTextureTGAOk() {
+			var response = GetAsset(_capId, _knownTextureTGAAsset.Id);
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureTGASame() {
-			var response = await GetAssetAsync(_capId, _knownTextureTGAAsset.Id);
+			var response = GetAsset(_capId, _knownTextureTGAAsset.Id);
 			var assetData = new byte[_knownTextureTGAAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.That(assetData.SequenceEqual(_knownTextureTGAAsset.Data));
@@ -433,85 +433,85 @@ namespace f_stopHttpApiTests {
 		#region Valid Ranges
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash0_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0) });
+		public void TestGetAssetKnownTextureByteRange_0dash0_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes 0-0/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash0_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Take(1), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash0_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0)});
+		public void TestGetAssetKnownTextureByteRange_0dash0_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 0)});
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data, assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash_Ok() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
+		public void TestGetAssetKnownTextureByteRange_0dash_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, null) });
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash4_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
+		public void TestGetAssetKnownTextureByteRange_0dash4_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes 0-4/{_knownTextureAsset.Data.Length}", contentRange);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash4_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Take(5), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash4_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
+		public void TestGetAssetKnownTextureByteRange_0dash4_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 4) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_3dash_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
+		public void TestGetAssetKnownTextureByteRange_3dash_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes 3-{_knownTextureAsset.Data.Length - 1}/{_knownTextureAsset.Data.Length}", contentRange.ToString());
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_3dash_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Skip(3), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_3dash_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
+		public void TestGetAssetKnownTextureByteRange_3dash_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(3, null) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_5dash5_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
+		public void TestGetAssetKnownTextureByteRange_5dash5_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes 5-5/{_knownTextureAsset.Data.Length}", contentRange.ToString());
 		}
@@ -519,21 +519,21 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_5dash5_CorrectData() {
 			// One byte only.
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Skip(5).Take(1), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_5dash5_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
+		public void TestGetAssetKnownTextureByteRange_5dash5_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 5) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_dash3_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+		public void TestGetAssetKnownTextureByteRange_dash3_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes {_knownTextureAsset.Data.Length - 3}-{_knownTextureAsset.Data.Length - 1}/{_knownTextureAsset.Data.Length}", contentRange.ToString());
 		}
@@ -542,7 +542,7 @@ namespace f_stopHttpApiTests {
 		public async Task TestGetAssetKnownTextureByteRange_dash3_CorrectData() {
 			// Aperture treats "-3" same as "0-3" which is wrong.
 			// Correct RFC7233 page 6 result: the last 3 bytes.
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Skip(_knownTextureAsset.Data.Length - 3), assetData.Take(bytesRead));
@@ -552,86 +552,86 @@ namespace f_stopHttpApiTests {
 		public async Task TestGetAssetKnownTextureByteRange_dash3_Only3Bytes() {
 			// Aperture treats "-3" same as "0-3" which is wrong.
 			// Correct RFC7233 page 6 result: the last 3 bytes.
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(3, bytesRead);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_dash3_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
+		public void TestGetAssetKnownTextureByteRange_dash3_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -3) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_dashMax_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data, assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_dashMax_Ok() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length) });
+		public void TestGetAssetKnownTextureByteRange_dashMax_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -_knownTextureAsset.Data.Length) });
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_dash9999_CorrectData() {
 			// Aperture limits to known byte range from asset.
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data, assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_dash9999_Ok() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
+		public void TestGetAssetKnownTextureByteRange_dash9999_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(null, -9999) });
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_5dash10_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
+		public void TestGetAssetKnownTextureByteRange_5dash10_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes 5-10/{_knownTextureAsset.Data.Length}", contentRange.ToString());
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_5dash10_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Skip(5).Take(1 + 10 - 5), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_5dash10_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
+		public void TestGetAssetKnownTextureByteRange_5dash10_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 10) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash9999_CorrectData() {
 			// Aperture limits to known byte range from asset.
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Take(9999), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash9999_Ok() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
+		public void TestGetAssetKnownTextureByteRange_0dash9999_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 9999) });
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_5dash9999_ContentRangeCorrect() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
+		public void TestGetAssetKnownTextureByteRange_5dash9999_ContentRangeCorrect() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
 			var contentRange = response.Headers.Get("Content-Range");
 			Assert.AreEqual($"bytes 5-{_knownTextureAsset.Data.Length - 1}/{_knownTextureAsset.Data.Length}", contentRange.ToString());
 		}
@@ -639,41 +639,41 @@ namespace f_stopHttpApiTests {
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_5dash9999_CorrectData() {
 			// Aperture limits to known byte range from asset.
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data.Skip(5).Take(1 + 9999 - 5), assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_5dash9999_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
+		public void TestGetAssetKnownTextureByteRange_5dash9999_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(5, 9999) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
 		[Test] // I decided that this server should respond with the single-range type response if the multipart request coalesced into a single range.
 		public async Task TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
 			var assetData = new byte[_knownTextureAsset.Data.Length];
 			var bytesRead = await response.GetResponseStream().ReadAsync(assetData, 0, assetData.Length);
 			Assert.AreEqual(_knownTextureAsset.Data, assetData.Take(bytesRead));
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_Ok() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
+		public void TestGetAssetKnownTextureByteRange_0dash1_1dash_dash1_Ok() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(1, null), new Range(null, -1) });
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectMediaType() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+		public void TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectMediaType() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
 			Assert.That(response.ContentType.StartsWith("multipart/byteranges; boundary=", StringComparison.Ordinal));
 		}
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectMimeTypes() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
 
 			using (var stream = response.GetResponseStream())
 			using (var contentStream = new StreamContent(stream)) {
@@ -689,7 +689,7 @@ namespace f_stopHttpApiTests {
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectContentRanges() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
 
 			using (var stream = response.GetResponseStream())
 			using (var contentStream = new StreamContent(stream)) {
@@ -709,7 +709,7 @@ namespace f_stopHttpApiTests {
 
 		[Test]
 		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_CorrectData() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
 
 			using (var stream = response.GetResponseStream())
 			using (var contentStream = new StreamContent(stream)) {
@@ -726,8 +726,8 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public async Task TestGetAssetKnownTextureByteRange_0dash1_5dash8_PartialContent() {
-			var response = await GetAssetAsync(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
+		public void TestGetAssetKnownTextureByteRange_0dash1_5dash8_PartialContent() {
+			var response = GetAsset(_capId, _knownTextureAsset.Id, ranges: new List<Range> { new Range(0, 1), new Range(5, 8) });
 			Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
 		}
 
@@ -736,9 +736,9 @@ namespace f_stopHttpApiTests {
 		// TODO: figure out a way to test bandwidth limiting.
 
 		[Test]
-		public async Task TestGetAssetUnknownCapNotFound() {
+		public void TestGetAssetUnknownCapNotFound() {
 			try {
-				var response = await GetAssetAsync(Guid.NewGuid(), _knownTextureAsset.Id);
+				var response = GetAsset(Guid.NewGuid(), _knownTextureAsset.Id);
 				Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 			}
 			catch (WebException e) {
@@ -747,9 +747,9 @@ namespace f_stopHttpApiTests {
 		}
 
 		[Test]
-		public async Task TestGetAssetUnknownAssetNotFound() {
+		public void TestGetAssetUnknownAssetNotFound() {
 			try {
-				var response = await GetAssetAsync(_capId, Guid.NewGuid());
+				var response = GetAsset(_capId, Guid.NewGuid());
 				Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 			}
 			catch (WebException e) {
