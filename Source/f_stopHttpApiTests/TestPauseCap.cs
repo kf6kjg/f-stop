@@ -23,15 +23,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using NUnit.Framework;
 using System;
+using System.Net;
+using NUnit.Framework;
+using RestSharp;
 
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestPauseCap {
-		// TODO: Tests for API cap pause
+		public static IRestResponse PauseCap(Guid capId, string adminToken = Constants.SERVICE_ADMIN_TOKEN) {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/PAUSE/{adminToken}/{capId.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			var response = client.Execute(request);
+			return response;
+		}
+
+		// Can't find a working sane way to test that a call that never returns, goes off into an loop or whatever, takes at least X milliseconds and aborts the call when it does.
+		// Need that to test if pause actually pauses the call.
+		// Had to resort to manual testing.
+
 		[Test]
-		public void TestCase() {
+		public void TestPauseCapBadAdminTokenBadRequest() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			var response = PauseCap(capId, "badToken");
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestPauseCapOk() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			var response = PauseCap(capId);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestPauseCapUnknownCapBadRequest() {
+			var response = PauseCap(Guid.NewGuid());
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 	}
 }
