@@ -23,15 +23,51 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using NUnit.Framework;
 using System;
+using System.Net;
+using NUnit.Framework;
+using RestSharp;
 
 namespace f_stopHttpApiTests {
 	[TestFixture]
 	public class TestRemoveCap {
-		// TODO: Tests for API cap remove
+		public static IRestResponse RemoveCap(Guid capId, string adminToken = Constants.SERVICE_ADMIN_TOKEN) {
+			var client = new RestClient(Constants.SERVICE_URI);
+			var url = $"/CAPS/HTT/REMCAP/{adminToken}/{capId.ToString("N")}";
+			var request = new RestRequest(url, Method.GET);
+			var response = client.Execute(request);
+			return response;
+		}
+
 		[Test]
-		public void TestCase() {
+		public void TestRemoveCapBadAdminTokenBadRequest() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			var response = RemoveCap(capId, "badToken");
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestRemoveCapKnownOk() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			var response = RemoveCap(capId);
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestRemoveCapTwiceBadRequest() {
+			var capId = Guid.NewGuid();
+			TestAddCap.AddCap(capId);
+			RemoveCap(capId);
+			var response = RemoveCap(capId);
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
+		}
+
+		[Test]
+		public void TestRemoveCapUnknownBadRequest() {
+			var response = RemoveCap(Guid.NewGuid());
+			Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, "Bad Status:\n\n" + response.Content);
 		}
 	}
 }
