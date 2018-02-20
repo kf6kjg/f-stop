@@ -24,8 +24,10 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using Chattel;
@@ -45,6 +47,14 @@ namespace f_stop {
 		private static readonly string DEFAULT_INI_FILE = Path.Combine(EXECUTABLE_DIRECTORY, "f_stop.ini");
 
 		private static readonly string COMPILED_BY = "?mono?"; // Replaced during automatic packaging.
+
+		private static readonly string DEFAULT_DB_FOLDER_PATH = "localStorage";
+
+		private static readonly string DEFAULT_WRITECACHE_FILE_PATH = "whiplru.wcache";
+
+		private static readonly uint DEFAULT_WRITECACHE_RECORD_COUNT = 1024U * 1024U * 1024U/*1GB*/ / 17 /*WriteCacheNode.BYTE_SIZE*/;
+
+		private static readonly Dictionary<string, IAssetServer> _assetServersByName = new Dictionary<string, IAssetServer>();
 
 		public static int Main(string[] args) {
 			// First line, hook the appdomain to the crash reporter
@@ -113,7 +123,11 @@ namespace f_stop {
 				// Read in the ini file
 				ReadConfigurationFromINI(configSource);
 
-				var chattelConfigRead = new ChattelConfiguration(configSource, configSource.Configs["AssetsRead"]);
+				var configRead = configSource.Configs["AssetsRead"];
+
+				var serversRead = GetServers(configSource, configRead, _assetServersByName);
+
+				var chattelConfigRead = GetConfig(configRead, serversRead);
 
 				var chattelReader = new ChattelReader(chattelConfigRead);
 
@@ -197,6 +211,110 @@ namespace f_stop {
 					LOG.Fatal($"Failure reading configuration file at {Path.GetFullPath(iniFileName)}");
 				}
 			}
+		}
+
+		private static IEnumerable<IEnumerable<IAssetServer>> GetServers(IConfigSource configSource, IConfig assetConfig, Dictionary<string, IAssetServer> serverList) {
+			var serialParallelServerSources = assetConfig?
+				.GetString("Servers", string.Empty)
+				.Split(',')
+				.Where(parallelSources => !string.IsNullOrWhiteSpace(parallelSources))
+				.Select(parallelSources => parallelSources
+					.Split('&')
+					.Where(source => !string.IsNullOrWhiteSpace(source))
+					.Select(source => source.Trim())
+				)
+				.Where(parallelSources => parallelSources.Any())
+			;
+
+			var serialParallelAssetServers = new List<List<IAssetServer>>();
+
+			if (serialParallelServerSources != null && serialParallelServerSources.Any()) {
+				foreach (var parallelSources in serialParallelServerSources) {
+					var parallelServerConnectors = new List<IAssetServer>();
+					foreach (var sourceName in parallelSources) {
+						var sourceConfig = configSource.Configs[sourceName];
+						var type = sourceConfig?.GetString("Type", string.Empty)?.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+
+						if (!serverList.TryGetValue(sourceName, out var serverConnector)) {
+							try {
+								switch (type) {
+									case "whip":
+										serverConnector = new AssetServerWHIP(
+											sourceName,
+											sourceConfig.GetString("Host", string.Empty),
+											sourceConfig.GetInt("Port", 32700),
+											sourceConfig.GetString("Password", "changeme") // Yes, that's the default password for WHIP.
+										);
+										break;
+									case "cf":
+										serverConnector = new AssetServerCF(
+											sourceName,
+											sourceConfig.GetString("Username", string.Empty),
+											sourceConfig.GetString("APIKey", string.Empty),
+											sourceConfig.GetString("DefaultRegion", string.Empty),
+											sourceConfig.GetBoolean("UseInternalURL", true),
+											sourceConfig.GetString("ContainerPrefix", string.Empty)
+										);
+										break;
+									default:
+										LOG.Warn($"Unknown asset server type in section [{sourceName}].");
+										break;
+								}
+
+								serverList.Add(sourceName, serverConnector);
+							}
+							catch (SocketException e) {
+								LOG.Error($"Asset server of type '{type}' defined in section [{sourceName}] failed setup. Skipping server.", e);
+							}
+						}
+
+						if (serverConnector != null) {
+							parallelServerConnectors.Add(serverConnector);
+						}
+					}
+
+					if (parallelServerConnectors.Any()) {
+						serialParallelAssetServers.Add(parallelServerConnectors);
+					}
+				}
+			}
+			else {
+				LOG.Warn("Servers empty or not specified. No asset server sections configured.");
+			}
+
+			return serialParallelAssetServers;
+		}
+
+		private static ChattelConfiguration GetConfig(IConfig assetConfig, IEnumerable<IEnumerable<IAssetServer>> serialParallelAssetServers) {
+			// Set up local storage
+			var localStoragePathRead = assetConfig?.GetString("DatabaseFolderPath", DEFAULT_DB_FOLDER_PATH) ?? DEFAULT_DB_FOLDER_PATH;
+
+			DirectoryInfo localStorageFolder = null;
+
+			if (string.IsNullOrWhiteSpace(localStoragePathRead)) {
+				LOG.Info($"DatabaseFolderPath is empty, local storage of assets disabled.");
+			}
+			else if (!Directory.Exists(localStoragePathRead)) {
+				LOG.Info($"DatabaseFolderPath folder does not exist, local storage of assets disabled.");
+			}
+			else {
+				localStorageFolder = new DirectoryInfo(localStoragePathRead);
+				LOG.Info($"Local storage of assets enabled at {localStorageFolder.FullName}");
+			}
+
+			// Set up write cache
+			var writeCachePath = assetConfig?.GetString("WriteCacheFilePath", DEFAULT_WRITECACHE_FILE_PATH) ?? DEFAULT_WRITECACHE_FILE_PATH;
+			var writeCacheRecordCount = (uint)Math.Max(0, assetConfig?.GetLong("WriteCacheRecordCount", DEFAULT_WRITECACHE_RECORD_COUNT) ?? DEFAULT_WRITECACHE_RECORD_COUNT);
+
+			if (string.IsNullOrWhiteSpace(writeCachePath) || writeCacheRecordCount <= 0 || localStorageFolder == null) {
+				LOG.Warn($"WriteCacheFilePath is empty, WriteCacheRecordCount is zero, or caching is disabled. Crash recovery will be compromised.");
+			}
+			else {
+				var writeCacheFile = new FileInfo(writeCachePath);
+				LOG.Info($"Write cache enabled at {writeCacheFile.FullName} with {writeCacheRecordCount} records.");
+			}
+
+			return new ChattelConfiguration(localStoragePathRead, writeCachePath, writeCacheRecordCount, serialParallelAssetServers);
 		}
 
 		#endregion

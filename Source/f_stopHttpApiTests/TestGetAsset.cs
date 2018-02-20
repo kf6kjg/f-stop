@@ -115,28 +115,9 @@ namespace f_stopHttpApiTests {
 				Type = type,
 			};
 
-			var assetPath = UuidToCachePath(asset.Id);
-
-			Directory.CreateDirectory(Directory.GetParent(assetPath).FullName);
-			using (var file = File.Create(assetPath)) {
-				ProtoBuf.Serializer.Serialize(file, asset);
-			}
+			f_stopHttpApiTests.Setup.LocalStorage.StoreAsset(asset);
 
 			return asset;
-		}
-
-		/// <summary>
-		/// Converts a GUID to a path based on the cache location.
-		/// </summary>
-		/// <returns>The path.</returns>
-		/// <param name="id">Asset identifier.</param>
-		private static string UuidToCachePath(Guid id) {
-			var noPunctuationAssetId = id.ToString("N");
-			var path = Constants.TEST_CACHE_PATH;
-			for (var index = 0; index < noPunctuationAssetId.Length; index += 2) {
-				path = Path.Combine(path, noPunctuationAssetId.Substring(index, 2));
-			}
-			return path + ".pbasset";
 		}
 
 		[OneTimeTearDown]

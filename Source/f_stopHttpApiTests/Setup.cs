@@ -38,6 +38,8 @@ namespace f_stopHttpApiTests {
 	public sealed class Setup {
 		private F_Stop _service;
 
+		public static IChattelLocalStorage LocalStorage { get; private set; }
+
 		[OneTimeSetUp]
 		public void Init() {
 			// Configure Log4Net
@@ -75,8 +77,9 @@ namespace f_stopHttpApiTests {
 			// Start booting server
 			var pidFileManager = new PIDFileManager(Constants.PID_FILE_PATH);
 
-			var chattelConfigRead = new ChattelConfiguration(configSource, configSource.Configs["AssetsRead"]);
-			var chattelReader = new ChattelReader(chattelConfigRead);
+			var chattelConfigRead = new ChattelConfiguration(Constants.TEST_CACHE_PATH);
+			LocalStorage = new AssetStorageSimpleFolderTree(chattelConfigRead);
+			var chattelReader = new ChattelReader(chattelConfigRead, LocalStorage);
 
 			_service = new F_Stop(
 				Constants.SERVICE_URI,
