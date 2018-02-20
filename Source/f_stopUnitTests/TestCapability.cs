@@ -75,7 +75,7 @@ namespace f_stopUnitTests {
 			Directory.CreateDirectory(Constants.TEST_CACHE_PATH);
 
 			ConfigSingleton.ChattelReader = new Chattel.ChattelReader(
-				new Chattel.ChattelConfiguration(Constants.TEST_CACHE_PATH, Constants.TEST_WRITE_CACHE_PATH)
+				new Chattel.ChattelConfiguration(Constants.TEST_CACHE_PATH)
 			);
 			ConfigSingleton.NegativeCacheItemLifetime = Constants.SERVICE_NC_LIFETIME;
 			ConfigSingleton.ValidTypes = new System.Collections.Concurrent.ConcurrentBag<sbyte> {
